@@ -242,12 +242,13 @@ def list_users() -> List[Dict[str, Any]]:
     result.sort(key=lambda x: x["username"])
     return result
 
-def create_user(username: str, plain_password: str, role: str = "creator", display_name: Optional[str] = None) -> Dict[str, Any]:
+def create_user(username: str, password: Optional[str] = None, role: str = "creator", display_name: Optional[str] = None, plain_password: Optional[str] = None) -> Dict[str, Any]:
     """Creates a new user account with hashed password and assigned role."""
+    pwd = password or plain_password
     username = username.strip().lower()
     if not username or len(username) < 3:
         raise ValueError("Username must be at least 3 characters long.")
-    if len(plain_password) < 6:
+    if not pwd or len(pwd) < 6:
         raise ValueError("Password must be at least 6 characters long.")
     if role not in ROLES:
         raise ValueError(f"Invalid role. Allowed roles are: {', '.join(ROLES)}")
@@ -256,7 +257,7 @@ def create_user(username: str, plain_password: str, role: str = "creator", displ
     if username in users:
         raise ValueError(f"User '{username}' already exists.")
         
-    p_hash, salt = hash_password(plain_password)
+    p_hash, salt = hash_password(pwd)
     users[username] = {
         "username": username,
         "display_name": display_name or username.capitalize(),
