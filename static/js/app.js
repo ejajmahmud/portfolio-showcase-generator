@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function getPreferredTheme() {
     const saved = localStorage.getItem('portfolio-showcase-theme');
     if (saved === 'light' || saved === 'dark') return saved;
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    return 'light';
   }
 
   function applyTheme(theme) {

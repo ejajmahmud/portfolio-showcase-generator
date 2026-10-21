@@ -1,5 +1,55 @@
 [
   {
+    "title": "Dalwa7 | Offshore & Onshore Engineering, EPC & Green Energy",
+    "slug": "dalwa7-offshore-onshore-engineering-epc-green-energy",
+    "url": "https://dalwa7.com/",
+    "category": "",
+    "type": "",
+    "mobile_finish": "deep-blue",
+    "exports": {
+      "showcase_png": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy.png",
+      "showcase_webp": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy.webp",
+      "showcase_jpg": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy.jpg",
+      "mobile_png": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-mobile-iphone17promax.png",
+      "mobile_webp": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-mobile-iphone17promax.webp",
+      "mobile_jpg": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-mobile-iphone17promax.jpg",
+      "tablet_png": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-tablet-ipad.png",
+      "tablet_webp": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-tablet-ipad.webp",
+      "tablet_jpg": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-tablet-ipad.jpg",
+      "desktop_png": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-desktop.png",
+      "desktop_webp": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-desktop.webp",
+      "desktop_jpg": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-desktop.jpg",
+      "metadata_json": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-metadata.json",
+      "zip": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-all-assets.zip"
+    },
+    "created_at": null
+  },
+  {
+    "title": "Alawa Kundasang Homestay | Alawa Resorts",
+    "slug": "alawa-kundasang-homestay-alawa-resorts",
+    "url": "https://alawaresorts.com/",
+    "category": "",
+    "type": "",
+    "mobile_finish": "deep-blue",
+    "exports": {
+      "showcase_png": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts.png",
+      "showcase_webp": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts.webp",
+      "showcase_jpg": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts.jpg",
+      "mobile_png": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-mobile-iphone17promax.png",
+      "mobile_webp": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-mobile-iphone17promax.webp",
+      "mobile_jpg": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-mobile-iphone17promax.jpg",
+      "tablet_png": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-tablet-ipad.png",
+      "tablet_webp": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-tablet-ipad.webp",
+      "tablet_jpg": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-tablet-ipad.jpg",
+      "desktop_png": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-desktop.png",
+      "desktop_webp": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-desktop.webp",
+      "desktop_jpg": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-desktop.jpg",
+      "metadata_json": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-metadata.json",
+      "zip": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-all-assets.zip"
+    },
+    "created_at": null
+  },
+  {
     "title": "Earthen Chem \u2013 Earthen Chemicals Sdn. Bhd.",
     "slug": "earthen-chem-earthen-chemicals-sdn-bhd",
     "url": "https://earthenchem.com.my/",
@@ -18,50 +68,6 @@
       "desktop_webp": "/exports/earthenchemcommy/earthen-chem-earthen-chemicals-sdn-bhd-desktop.webp",
       "desktop_jpg": "/exports/earthenchemcommy/earthen-chem-earthen-chemicals-sdn-bhd-desktop.jpg",
       "zip": "/exports/earthenchemcommy/earthen-chem-earthen-chemicals-sdn-bhd-all-assets.zip"
-    },
-    "created_at": null
-  },
-  {
-    "title": "Alawa Kundasang Homestay | Alawa Resorts",
-    "slug": "alawa-kundasang-homestay-alawa-resorts",
-    "url": "https://alawaresorts.com/",
-    "mobile_finish": "deep-blue",
-    "exports": {
-      "showcase_png": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts.png",
-      "showcase_webp": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts.webp",
-      "showcase_jpg": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts.jpg",
-      "mobile_png": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-mobile-iphone17promax.png",
-      "mobile_webp": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-mobile-iphone17promax.webp",
-      "mobile_jpg": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-mobile-iphone17promax.jpg",
-      "tablet_png": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-tablet-ipad.png",
-      "tablet_webp": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-tablet-ipad.webp",
-      "tablet_jpg": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-tablet-ipad.jpg",
-      "desktop_png": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-desktop.png",
-      "desktop_webp": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-desktop.webp",
-      "desktop_jpg": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-desktop.jpg",
-      "zip": "/exports/alawaresortscom/alawa-kundasang-homestay-alawa-resorts-all-assets.zip"
-    },
-    "created_at": null
-  },
-  {
-    "title": "Dalwa7 | Offshore & Onshore Engineering, EPC & Green Energy",
-    "slug": "dalwa7-offshore-onshore-engineering-epc-green-energy",
-    "url": "https://dalwa7.com/",
-    "mobile_finish": "deep-blue",
-    "exports": {
-      "showcase_png": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy.png",
-      "showcase_webp": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy.webp",
-      "showcase_jpg": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy.jpg",
-      "mobile_png": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-mobile-iphone17promax.png",
-      "mobile_webp": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-mobile-iphone17promax.webp",
-      "mobile_jpg": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-mobile-iphone17promax.jpg",
-      "tablet_png": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-tablet-ipad.png",
-      "tablet_webp": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-tablet-ipad.webp",
-      "tablet_jpg": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-tablet-ipad.jpg",
-      "desktop_png": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-desktop.png",
-      "desktop_webp": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-desktop.webp",
-      "desktop_jpg": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-desktop.jpg",
-      "zip": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-all-assets.zip"
     },
     "created_at": null
   },

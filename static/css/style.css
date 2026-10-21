@@ -4,49 +4,9 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   Design Tokens (Dark Theme Default)
+   Design Tokens (Light Theme Default)
    -------------------------------------------------------------------------- */
-:root, [data-theme="dark"] {
-  --color-scheme: dark;
-  --bg-app: #0b0f19;
-  --bg-surface: #121826;
-  --bg-surface-raised: #182234;
-  --bg-surface-subtle: #1e293b;
-  --border-subtle: #242f44;
-  --border-strong: #334155;
-  --border-focus: #3b82f6;
-
-  /* Typography */
-  --text-primary: #f8fafc;     /* Contrast > 15:1 */
-  --text-secondary: #94a3b8;   /* Contrast > 7:1 (AAA) */
-  --text-muted: #64748b;       /* Contrast > 4.5:1 (AA) */
-  --text-inverse: #0b0f19;
-
-  /* Brand Accents */
-  --brand-primary: #2563eb;
-  --brand-primary-hover: #1d4ed8;
-  --brand-surface: rgba(37, 99, 235, 0.14);
-  --brand-border: rgba(37, 99, 235, 0.45);
-  --brand-text: #60a5fa;
-
-  /* Badges */
-  --badge-bg: #1e293b;
-  --badge-text: #cbd5e1;
-  --badge-accent-bg: rgba(37, 99, 235, 0.18);
-  --badge-accent-text: #93c5fd;
-
-  /* Elevation Shadows */
-  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-input-focus: 0 0 0 3px rgba(37, 99, 235, 0.35);
-
-  /* Preview Canvas Background */
-  --preview-canvas-bg: #E5E5E5;
-}
-
-/* --------------------------------------------------------------------------
-   Design Tokens (Light Theme)
-   -------------------------------------------------------------------------- */
-[data-theme="light"] {
+:root, [data-theme="light"] {
   --color-scheme: light;
   --bg-app: #f1f4f9;
   --bg-surface: #ffffff;
@@ -78,6 +38,46 @@
   /* Elevation Shadows */
   --shadow-card: 0 4px 14px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04);
   --shadow-input-focus: 0 0 0 3px rgba(29, 78, 216, 0.2);
+
+  /* Preview Canvas Background */
+  --preview-canvas-bg: #E5E5E5;
+}
+
+/* --------------------------------------------------------------------------
+   Design Tokens (Dark Theme)
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] {
+  --color-scheme: dark;
+  --bg-app: #0b0f19;
+  --bg-surface: #121826;
+  --bg-surface-raised: #182234;
+  --bg-surface-subtle: #1e293b;
+  --border-subtle: #242f44;
+  --border-strong: #334155;
+  --border-focus: #3b82f6;
+
+  /* Typography */
+  --text-primary: #f8fafc;     /* Contrast > 15:1 */
+  --text-secondary: #94a3b8;   /* Contrast > 7:1 (AAA) */
+  --text-muted: #64748b;       /* Contrast > 4.5:1 (AA) */
+  --text-inverse: #0b0f19;
+
+  /* Brand Accents */
+  --brand-primary: #2563eb;
+  --brand-primary-hover: #1d4ed8;
+  --brand-surface: rgba(37, 99, 235, 0.14);
+  --brand-border: rgba(37, 99, 235, 0.45);
+  --brand-text: #60a5fa;
+
+  /* Badges */
+  --badge-bg: #1e293b;
+  --badge-text: #cbd5e1;
+  --badge-accent-bg: rgba(37, 99, 235, 0.18);
+  --badge-accent-text: #93c5fd;
+
+  /* Elevation Shadows */
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-input-focus: 0 0 0 3px rgba(37, 99, 235, 0.35);
 
   /* Preview Canvas Background */
   --preview-canvas-bg: #E5E5E5;
