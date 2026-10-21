@@ -21,14 +21,9 @@
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Monaco, Consolas, monospace;
 
-  /* Authentic Apple macOS Light Mode Grain Gradient Canvas */
+  /* Authentic Apple macOS Light Mode Wallpaper Canvas */
   --bg-app: #ebeef5;
-  --bg-mesh: 
-    radial-gradient(circle at 14% 12%, rgba(214, 226, 248, 0.75) 0%, transparent 50%),
-    radial-gradient(circle at 86% 16%, rgba(226, 220, 246, 0.70) 0%, transparent 48%),
-    radial-gradient(circle at 50% 85%, rgba(218, 234, 252, 0.60) 0%, transparent 52%),
-    radial-gradient(circle at 80% 82%, rgba(206, 222, 245, 0.55) 0%, transparent 44%),
-    linear-gradient(180deg, #f7f8fc 0%, #ebeef6 45%, #e1e5f0 100%);
+  --bg-mesh: url('/static/img/FGrad_Feb11_Mac+2.webp');
 
   /* Liquid Glass Surfaces (macOS Frosted Glass Windows) */
   --glass-bg: rgba(255, 255, 255, 0.84);
@@ -191,8 +186,10 @@ body {
   font-family: var(--font-body);
   background-color: var(--bg-app);
   background-image: var(--bg-mesh);
-  background-attachment: fixed;
   background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.5;
