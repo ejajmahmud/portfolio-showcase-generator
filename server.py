@@ -3,14 +3,16 @@ import json
 import glob
 import shutil
 import asyncio
+import time
+import uuid
 from datetime import datetime, timezone
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException, Depends
-from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from core.pipeline import generate_portfolio_assets, slugify
 from core.auth import (
@@ -103,6 +105,17 @@ class GenerateRequest(BaseModel):
     shadow_intensity: Optional[str] = "normal"
     delay: Optional[float] = 2.0
     hide_banners: Optional[bool] = True
+    headless: Optional[bool] = True
+
+class BatchGenerateRequest(BaseModel):
+    urls: List[str]
+    category: Optional[str] = None
+    type: Optional[str] = None
+    mobile_finish: Optional[str] = "deep-blue"
+    tablet_finish: Optional[str] = "space-black"
+    bg_color: Optional[str] = "#E5E5E5"
+    shadow_intensity: Optional[str] = "normal"
+    delay: Optional[float] = 2.5
     headless: Optional[bool] = True
 
 # --- Authentication Helpers & RBAC Dependencies ---
@@ -330,6 +343,190 @@ async def generate_showcase(req: GenerateRequest, request: Request):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+# --- Batch Showcase Generation Engine ---
+BATCH_JOBS: Dict[str, dict] = {}
+
+async def run_batch_worker(batch_id: str, req: BatchGenerateRequest, username: str):
+    job = BATCH_JOBS.get(batch_id)
+    if not job:
+        return
+    job["status"] = "processing"
+    job["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    total = len(job["urls"])
+    for idx, raw_url in enumerate(job["urls"]):
+        url = raw_url.strip()
+        if not url.startswith("http://") and not url.startswith("https://"):
+            url = "https://" + url
+
+        domain = url.split("//")[-1].split("/")[0]
+        title = domain.capitalize()
+        base_slug = slugify(domain)
+        history_slugs = {h.get("slug") for h in load_history()}
+        slug = base_slug
+        if slug in history_slugs:
+            slug = f"{base_slug}-{int(time.time()) % 10000}"
+
+        project_dir = os.path.join(EXPORTS_DIR, slug)
+        os.makedirs(project_dir, exist_ok=True)
+
+        job["current_index"] = idx
+        job["current_url"] = url
+        job["current_step"] = f"Capturing responsive viewports for {domain}..."
+        job["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+        try:
+            result = await asyncio.to_thread(
+                generate_portfolio_assets,
+                url=url,
+                output_dir=project_dir,
+                project_name=title,
+                category=req.category,
+                website_type=req.type,
+                mobile_finish=req.mobile_finish or "deep-blue",
+                tablet_finish=req.tablet_finish or "space-black",
+                bg_color=req.bg_color or "#E5E5E5",
+                shadow_intensity=req.shadow_intensity or "normal",
+                delay=req.delay if req.delay is not None else 2.5,
+                hide_banners=True,
+                headless=req.headless if req.headless is not None else True
+            )
+
+            relative_exports = {}
+            for key, filepath in result["exports"].items():
+                rel = os.path.relpath(filepath, EXPORTS_DIR).replace("\\", "/")
+                relative_exports[key] = f"/exports/{rel}"
+
+            history_item = {
+                "title": result["title"],
+                "slug": result["slug"],
+                "url": url,
+                "category": result.get("category", "") or (req.category or ""),
+                "type": result.get("type", "") or (req.type or ""),
+                "mobile_finish": req.mobile_finish or "deep-blue",
+                "exports": relative_exports,
+                "created_by": username,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            save_history(history_item)
+
+            job["completed"].append(history_item)
+            job["progress"] = int(((idx + 1) / total) * 100)
+            job["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+        except Exception as e:
+            job["errors"].append({
+                "url": url,
+                "index": idx,
+                "error": str(e)
+            })
+            job["progress"] = int(((idx + 1) / total) * 100)
+            job["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+        # Controlled cool-down between batch captures to ensure Playwright & memory are cleanly cleared
+        if idx < total - 1:
+            await asyncio.sleep(2.0)
+
+    job["status"] = "completed"
+    job["current_step"] = "All batch showcases processed successfully."
+    job["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+
+@app.post("/api/generate-batch")
+async def generate_batch_showcase(req: BatchGenerateRequest, request: Request):
+    user = require_role(["admin", "creator"])(request)
+    
+    cleaned_urls = []
+    seen = set()
+    for u in req.urls:
+        stripped = u.strip()
+        if not stripped:
+            continue
+        if not stripped.startswith("http://") and not stripped.startswith("https://"):
+            stripped = "https://" + stripped
+        if stripped not in seen:
+            seen.add(stripped)
+            cleaned_urls.append(stripped)
+
+    if not cleaned_urls:
+        raise HTTPException(status_code=400, detail="Please provide at least one valid website URL.")
+
+    if len(cleaned_urls) > 15:
+        raise HTTPException(status_code=400, detail="Batch mode is limited to 15 websites per run to preserve server stability.")
+
+    batch_id = f"batch_{int(time.time())}_{uuid.uuid4().hex[:6]}"
+    BATCH_JOBS[batch_id] = {
+        "batch_id": batch_id,
+        "status": "pending",
+        "total": len(cleaned_urls),
+        "urls": cleaned_urls,
+        "current_index": 0,
+        "current_url": cleaned_urls[0],
+        "current_step": "Initializing batch queue...",
+        "progress": 0,
+        "completed": [],
+        "errors": [],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    asyncio.create_task(run_batch_worker(batch_id, req, user["username"]))
+
+    return {
+        "success": True,
+        "batch_id": batch_id,
+        "total": len(cleaned_urls)
+    }
+
+
+@app.get("/api/batch/{batch_id}")
+async def get_batch_status(batch_id: str, request: Request):
+    require_auth(request)
+    job = BATCH_JOBS.get(batch_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Batch job not found.")
+    return job
+
+
+@app.get("/api/batch/{batch_id}/events")
+async def stream_batch_events(batch_id: str, request: Request):
+    require_auth(request)
+    job = BATCH_JOBS.get(batch_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Batch job not found.")
+
+    async def sse_generator():
+        last_completed_count = -1
+        last_error_count = -1
+        last_step = ""
+        while True:
+            if await request.is_disconnected():
+                break
+
+            j = BATCH_JOBS.get(batch_id)
+            if not j:
+                break
+
+            curr_completed = len(j.get("completed", []))
+            curr_errors = len(j.get("errors", []))
+            curr_step = j.get("current_step", "")
+            status = j.get("status", "pending")
+
+            if curr_completed != last_completed_count or curr_errors != last_error_count or curr_step != last_step or status == "completed":
+                last_completed_count = curr_completed
+                last_error_count = curr_errors
+                last_step = curr_step
+
+                data_str = json.dumps(j)
+                yield f"data: {data_str}\n\n"
+
+            if status == "completed":
+                break
+
+            await asyncio.sleep(0.5)
+
+    return StreamingResponse(sse_generator(), media_type="text/event-stream")
 
 # --- History & Showcase CRUD API ---
 @app.get("/api/history")

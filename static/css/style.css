@@ -744,84 +744,834 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   Progress Tracker (Apple Fluid Status)
+   Apple HIG Mode Switcher (Single Website vs Batch Queue)
    -------------------------------------------------------------------------- */
-.progress-container {
-  margin-top: 24px;
-  padding-top: 22px;
-  border-top: 1px solid var(--glass-border-subtle);
+.generation-mode-switch-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
 }
 
-.progress-bar-bg {
-  width: 100%;
-  height: 7px;
+.apple-segmented {
+  display: inline-flex;
+  position: relative;
   background: var(--glass-surface-subtle);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 4px;
   border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  gap: 4px;
+}
+
+.segmented-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.segmented-btn:hover {
+  color: var(--text-primary);
+}
+
+.segmented-btn.active {
+  background: var(--glass-surface-raised);
+  color: var(--text-primary);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="dark"] .segmented-btn.active {
+  background: rgba(30, 41, 59, 0.95);
+  box-shadow: 
+    0 4px 14px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+.mode-badge-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--brand-surface);
+  color: var(--brand-text);
+  border: 1px solid var(--brand-border);
+}
+
+/* --------------------------------------------------------------------------
+   Batch Queue Mode Input Controls
+   -------------------------------------------------------------------------- */
+.batch-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: appleFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.single-input-container {
+  animation: appleFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes appleFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.batch-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.batch-detected-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--brand-text);
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-border);
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.textarea-wrapper textarea.styled-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--glass-input-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 14px 16px;
+  outline: none;
+  resize: vertical;
+  min-height: 110px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.textarea-wrapper textarea.styled-textarea:focus {
+  border-color: var(--border-focus);
+  background: var(--glass-input-focus);
+  box-shadow: var(--shadow-input-focus);
+}
+
+.batch-quick-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.batch-quick-chip,
+.batch-clear-chip {
+  background: transparent;
+  border: 1px dashed var(--border-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.batch-quick-chip:hover {
+  border-color: var(--brand-primary);
+  color: var(--brand-text);
+  background: var(--brand-surface);
+}
+
+.batch-clear-chip:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   Interactive Holographic Apple Device Stage Deck
+   -------------------------------------------------------------------------- */
+.apple-waiting-stage {
+  margin-top: 28px;
+  padding: 28px 24px 24px;
+  border-radius: 24px;
+  background: var(--glass-surface-subtle);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: stageEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes stageEnter {
+  from { opacity: 0; transform: scale(0.98) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.apple-stage-deck {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 20px;
+  perspective: 1000px;
+  padding: 10px 0;
+  user-select: none;
+}
+
+/* Base Device Frame Rules */
+.deck-device {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+}
+
+.deck-device .device-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-muted);
+  transition: color 0.3s ease;
+}
+
+/* Left: iPhone Perspective */
+.deck-iphone {
+  transform: rotateY(14deg) rotateZ(-1.5deg) translateZ(0);
+}
+
+.deck-iphone .device-bezel {
+  width: 78px;
+  height: 148px;
+  border-radius: 18px;
+  background: #1c1c1e;
+  border: 3px solid #3a3a3c;
+  box-shadow: 
+    0 16px 32px rgba(0, 0, 0, 0.28),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  position: relative;
   overflow: hidden;
-  margin-bottom: 14px;
-  border: 1px solid var(--glass-border-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px;
+  box-sizing: border-box;
 }
 
-.progress-bar-fill {
-  height: 100%;
-  width: 15%;
-  background: var(--gradient-primary);
+[data-theme="light"] .deck-iphone .device-bezel {
+  background: #2c2c2e;
+  border-color: #8e8e93;
+  box-shadow: 
+    0 12px 24px rgba(0, 0, 0, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+.deck-iphone .device-island {
+  width: 22px;
+  height: 6px;
   border-radius: 999px;
-  box-shadow: 0 0 12px rgba(0, 113, 227, 0.5);
-  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: #000000;
+  position: absolute;
+  top: 6px;
+  z-index: 10;
 }
 
-.progress-status {
+/* Center: MacBook Pro Canvas */
+.deck-macbook {
+  transform: translateZ(20px);
+}
+
+.deck-macbook .macbook-screen-lid {
+  width: 230px;
+  height: 144px;
+  border-radius: 10px 10px 0 0;
+  background: #1c1c1e;
+  border: 3px solid #3a3a3c;
+  border-bottom: none;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+[data-theme="light"] .deck-macbook .macbook-screen-lid {
+  background: #2c2c2e;
+  border-color: #8e8e93;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+}
+
+.deck-macbook .device-notch {
+  width: 26px;
+  height: 5px;
+  border-radius: 0 0 5px 5px;
+  background: #000000;
+  position: absolute;
+  top: 0;
+  left: calc(50% - 13px);
+  z-index: 10;
+}
+
+.deck-macbook .macbook-base {
+  width: 270px;
+  height: 10px;
+  border-radius: 0 0 12px 12px;
+  background: linear-gradient(180deg, #545458 0%, #3a3a3c 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+[data-theme="light"] .deck-macbook .macbook-base {
+  background: linear-gradient(180deg, #d1d1d6 0%, #aeaeb2 100%);
+  border-color: #8e8e93;
+}
+
+.deck-macbook .macbook-notch-cutout {
+  width: 38px;
+  height: 4px;
+  border-radius: 0 0 3px 3px;
+  background: rgba(0, 0, 0, 0.35);
+  position: absolute;
+  top: 0;
+  left: calc(50% - 19px);
+}
+
+/* Right: iPad Perspective */
+.deck-ipad {
+  transform: rotateY(-14deg) rotateZ(1.5deg) translateZ(0);
+}
+
+.deck-ipad .device-bezel {
+  width: 106px;
+  height: 144px;
+  border-radius: 14px;
+  background: #1c1c1e;
+  border: 3px solid #3a3a3c;
+  box-shadow: 
+    0 16px 32px rgba(0, 0, 0, 0.28),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  position: relative;
+  overflow: hidden;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+[data-theme="light"] .deck-ipad .device-bezel {
+  background: #2c2c2e;
+  border-color: #8e8e93;
+  box-shadow: 
+    0 12px 24px rgba(0, 0, 0, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+/* Device Screens & Wireframe Skeletons */
+.device-screen {
+  width: 100%;
+  height: 100%;
+  background: #09090b;
+  border-radius: inherit;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 6px;
+  box-sizing: border-box;
+  gap: 6px;
+}
+
+.screen-wireframe {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  opacity: 0.35;
+  transition: opacity 0.3s ease;
+}
+
+.wire-hero {
+  width: 100%;
+  height: 38px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.wire-hero-wide {
+  width: 100%;
+  height: 48px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.wire-hero-mid {
+  width: 100%;
+  height: 42px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.wire-card {
+  width: 100%;
+  height: 22px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.wire-nav {
+  width: 100%;
+  height: 8px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.wire-row {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.wire-col {
+  flex: 1;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Active Capturing Device State (Luminous Screen Glow) */
+.deck-device.capturing-active {
+  transform: translateY(-8px) scale(1.05);
+}
+
+.deck-device.capturing-active .device-label {
+  color: var(--brand-text);
+}
+
+.deck-device.capturing-active .device-screen {
+  box-shadow: inset 0 0 20px rgba(0, 113, 227, 0.6);
+}
+
+.deck-device.capturing-active .screen-wireframe {
+  opacity: 0.85;
+}
+
+.deck-device.capturing-active .device-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, transparent 0%, rgba(56, 189, 248, 0.35) 50%, transparent 100%);
+  animation: scanlineSweep 1.6s ease-in-out infinite;
+}
+
+@keyframes scanlineSweep {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+/* Device Done State (Green Success Badge) */
+.device-check-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #10b981;
+  color: #ffffff;
   display: flex;
   align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 20;
+}
+
+.deck-device.captured-done .device-check-badge {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.deck-device.captured-done .screen-wireframe {
+  opacity: 0.55;
+  filter: saturate(1.4);
+}
+
+.deck-device.captured-done .device-label {
+  color: #10b981;
+}
+
+/* --------------------------------------------------------------------------
+   macOS System Smooth Capsule Progress Bar
+   -------------------------------------------------------------------------- */
+.apple-progress-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.progress-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px;
+}
+
+.progress-title-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.apple-live-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.live-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: liveDotPulse 1.8s infinite;
+}
+
+@keyframes liveDotPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.progress-message {
+  font-family: var(--font-body);
   font-size: 13.5px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
-.spinner {
-  width: 18px;
-  height: 18px;
-  border: 2.5px solid var(--border-subtle);
-  border-top-color: var(--brand-primary);
-  border-radius: 50%;
-  animation: spin 0.75s linear infinite;
+.progress-pct-badge {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-text);
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-border);
+  padding: 2px 10px;
+  border-radius: 999px;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.apple-capsule-track {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--glass-surface-subtle);
+  border: 1px solid var(--border-subtle);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  position: relative;
 }
 
-.progress-steps {
+.apple-capsule-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--gradient-primary);
+  position: relative;
+  overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 14px rgba(0, 113, 227, 0.55);
+}
+
+.apple-capsule-laser {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 100%
+  );
+  animation: laserSweep 1.5s linear infinite;
+}
+
+@keyframes laserSweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+/* Apple iOS Step Pills */
+.apple-steps {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.step-pill {
-  font-size: 11.5px;
+.apple-steps .step-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
   font-weight: 600;
   padding: 5px 12px;
   border-radius: 999px;
   background: var(--glass-surface-subtle);
   border: 1px solid var(--glass-border-subtle);
   color: var(--text-muted);
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.step-pill.active {
+.apple-steps .step-pill .pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: background 0.25s ease;
+}
+
+.apple-steps .step-pill.active {
   border-color: var(--brand-primary);
   color: var(--brand-text);
   background: var(--brand-surface);
-  box-shadow: 0 0 12px rgba(0, 113, 227, 0.25);
+  box-shadow: 0 0 14px rgba(0, 113, 227, 0.3);
+  transform: translateY(-1px);
 }
 
-.step-pill.done {
-  border-color: #10b981;
+.apple-steps .step-pill.active .pill-dot {
+  background: var(--brand-primary);
+  box-shadow: 0 0 6px var(--brand-primary);
+}
+
+.apple-steps .step-pill.done {
+  border-color: rgba(16, 185, 129, 0.4);
   color: #10b981;
+  background: rgba(16, 185, 129, 0.10);
+}
+
+.apple-steps .step-pill.done .pill-dot {
+  background: #10b981;
+}
+
+/* --------------------------------------------------------------------------
+   Live Batch Queue Execution Deck (Batch Mode Only)
+   -------------------------------------------------------------------------- */
+.batch-progress-deck {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.batch-deck-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.batch-deck-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.batch-deck-counter {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--brand-text);
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-border);
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.batch-queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.batch-queue-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 12px;
+}
+
+.batch-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.batch-item-index {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--glass-surface-subtle);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.batch-item-url {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.batch-item-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.status-waiting {
+  background: var(--glass-surface-subtle);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+.status-capturing {
+  background: var(--brand-surface);
+  color: var(--brand-text);
+  border: 1px solid var(--brand-border);
+  animation: pulseChip 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pulseChip {
+  from { opacity: 0.8; }
+  to { opacity: 1; box-shadow: 0 0 10px rgba(0, 113, 227, 0.4); }
+}
+
+.status-done {
   background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.status-error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.batch-preview-link {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--brand-primary);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 3px 8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.batch-preview-link:hover {
+  background: var(--brand-surface);
+}
+
+/* --------------------------------------------------------------------------
+   Mobile Responsive Adjustments for Apple Device Deck
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .apple-stage-deck {
+    gap: 10px;
+    transform: scale(0.85);
+    transform-origin: center;
+    margin: -10px 0;
+  }
+  .deck-iphone .device-bezel {
+    width: 64px;
+    height: 122px;
+  }
+  .deck-macbook .macbook-screen-lid {
+    width: 175px;
+    height: 112px;
+  }
+  .deck-macbook .macbook-base {
+    width: 205px;
+  }
+  .deck-ipad .device-bezel {
+    width: 84px;
+    height: 116px;
+  }
+  .apple-steps {
+    justify-content: center;
+  }
+  .apple-segmented {
+    width: 100%;
+  }
+  .segmented-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
 }
 
 /* --------------------------------------------------------------------------

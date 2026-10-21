@@ -57,11 +57,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Progress UI Elements
+  // Generation Mode Elements
+  const modeBtnSingle = document.getElementById('mode-btn-single');
+  const modeBtnBatch = document.getElementById('mode-btn-batch');
+  const singleInputMode = document.getElementById('single-input-mode');
+  const batchInputMode = document.getElementById('batch-input-mode');
+  const batchUrlsInput = document.getElementById('batch-urls-input');
+  const batchDetectedBadge = document.getElementById('batch-detected-badge');
+  const btnSampleSites = document.getElementById('btn-sample-sites');
+  const batchClearBtn = document.getElementById('batch-clear-btn');
+  let currentGenerationMode = 'single';
+
+  // Progress UI & Apple 3D Device Stage Elements
   const progressContainer = document.getElementById('progress-container');
   const progressBarFill = document.getElementById('progress-bar-fill');
   const progressText = document.getElementById('progress-text') || document.getElementById('progress-message');
+  const progressPct = document.getElementById('progress-pct');
   const stepPills = document.querySelectorAll('.step-pill');
+  const deckIphone = document.getElementById('deck-iphone');
+  const deckMacbook = document.getElementById('deck-macbook');
+  const deckIpad = document.getElementById('deck-ipad');
+  const batchProgressDeck = document.getElementById('batch-progress-deck');
+  const batchDeckCounter = document.getElementById('batch-deck-counter');
+  const batchQueueList = document.getElementById('batch-queue-list');
 
   // Result Section Elements
   const resultsCard = document.getElementById('results-card');
@@ -569,7 +587,319 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --------------------------------------------------------------------------
-  // Generator Pipeline Form Submit
+  // Mode Switcher & Batch Queue Logic
+  // --------------------------------------------------------------------------
+  function setGenerationMode(mode) {
+    currentGenerationMode = mode;
+    if (mode === 'single') {
+      if (modeBtnSingle) {
+        modeBtnSingle.classList.add('active');
+        modeBtnSingle.setAttribute('aria-selected', 'true');
+      }
+      if (modeBtnBatch) {
+        modeBtnBatch.classList.remove('active');
+        modeBtnBatch.setAttribute('aria-selected', 'false');
+      }
+      if (singleInputMode) singleInputMode.classList.remove('hidden');
+      if (batchInputMode) batchInputMode.classList.add('hidden');
+      if (urlInput) urlInput.required = true;
+      updateSubmitButtonText();
+    } else {
+      if (modeBtnBatch) {
+        modeBtnBatch.classList.add('active');
+        modeBtnBatch.setAttribute('aria-selected', 'true');
+      }
+      if (modeBtnSingle) {
+        modeBtnSingle.classList.remove('active');
+        modeBtnSingle.setAttribute('aria-selected', 'false');
+      }
+      if (singleInputMode) singleInputMode.classList.add('hidden');
+      if (batchInputMode) batchInputMode.classList.remove('hidden');
+      if (urlInput) urlInput.required = false;
+      updateBatchBadge();
+      updateSubmitButtonText();
+    }
+  }
+
+  if (modeBtnSingle) modeBtnSingle.addEventListener('click', () => setGenerationMode('single'));
+  if (modeBtnBatch) modeBtnBatch.addEventListener('click', () => setGenerationMode('batch'));
+
+  function getBatchUrls() {
+    if (!batchUrlsInput) return [];
+    const lines = batchUrlsInput.value.split('\n');
+    const urls = [];
+    const seen = new Set();
+    for (let line of lines) {
+      let u = line.trim();
+      if (!u) continue;
+      if (!u.startsWith('http://') && !u.startsWith('https://')) {
+        u = 'https://' + u;
+      }
+      if (!seen.has(u)) {
+        seen.add(u);
+        urls.push(u);
+      }
+    }
+    return urls;
+  }
+
+  function updateBatchBadge() {
+    const count = getBatchUrls().length;
+    if (batchDetectedBadge) {
+      batchDetectedBadge.textContent = `${count} ${count === 1 ? 'website' : 'websites'}`;
+    }
+    updateSubmitButtonText();
+  }
+
+  function updateSubmitButtonText() {
+    const btnText = generateBtn ? generateBtn.querySelector('.btn-text') : null;
+    if (!btnText) return;
+    if (currentUser && currentUser.role === 'viewer') {
+      btnText.textContent = 'Viewing Mode (Disabled)';
+      return;
+    }
+    if (currentGenerationMode === 'single') {
+      btnText.textContent = 'Generate Portfolio Showcase';
+    } else {
+      const count = getBatchUrls().length;
+      btnText.textContent = count > 0 ? `Generate Batch Showcase (${count} ${count === 1 ? 'Site' : 'Sites'})` : 'Generate Batch Showcases';
+    }
+  }
+
+  if (batchUrlsInput) {
+    batchUrlsInput.addEventListener('input', updateBatchBadge);
+  }
+
+  if (btnSampleSites && batchUrlsInput) {
+    btnSampleSites.addEventListener('click', () => {
+      batchUrlsInput.value = 'https://apple.com\nhttps://stripe.com\nhttps://linear.app\nhttps://framer.com';
+      updateBatchBadge();
+      showToast('Loaded 4 sample design websites into batch queue', 'info');
+    });
+  }
+
+  if (batchClearBtn && batchUrlsInput) {
+    batchClearBtn.addEventListener('click', () => {
+      batchUrlsInput.value = '';
+      updateBatchBadge();
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // Interactive Apple 3D Device Stage & Capsule Progress Controller
+  // --------------------------------------------------------------------------
+  function updateProgress(percent, msg, activeStepKey) {
+    if (progressBarFill) {
+      progressBarFill.style.width = `${percent}%`;
+    }
+    if (progressPct) {
+      progressPct.textContent = `${Math.round(percent)}%`;
+    }
+    if (progressText) {
+      progressText.textContent = msg;
+    }
+
+    // 3D Apple Vector Device Deck Illuminations
+    if (activeStepKey === 'desk') {
+      if (deckMacbook) deckMacbook.className = 'deck-device deck-macbook capturing-active';
+      if (deckIphone) deckIphone.className = 'deck-device deck-iphone';
+      if (deckIpad) deckIpad.className = 'deck-device deck-ipad';
+    } else if (activeStepKey === 'mob') {
+      if (deckMacbook) deckMacbook.className = 'deck-device deck-macbook captured-done';
+      if (deckIphone) deckIphone.className = 'deck-device deck-iphone capturing-active';
+      if (deckIpad) deckIpad.className = 'deck-device deck-ipad';
+    } else if (activeStepKey === 'tab') {
+      if (deckMacbook) deckMacbook.className = 'deck-device deck-macbook captured-done';
+      if (deckIphone) deckIphone.className = 'deck-device deck-iphone captured-done';
+      if (deckIpad) deckIpad.className = 'deck-device deck-ipad capturing-active';
+    } else if (activeStepKey === 'frame' || activeStepKey === 'comp') {
+      if (deckMacbook) deckMacbook.className = 'deck-device deck-macbook capturing-active';
+      if (deckIphone) deckIphone.className = 'deck-device deck-iphone capturing-active';
+      if (deckIpad) deckIpad.className = 'deck-device deck-ipad capturing-active';
+    } else if (activeStepKey === 'exp') {
+      if (deckMacbook) deckMacbook.className = 'deck-device deck-macbook captured-done';
+      if (deckIphone) deckIphone.className = 'deck-device deck-iphone captured-done';
+      if (deckIpad) deckIpad.className = 'deck-device deck-ipad captured-done';
+    }
+
+    // Update Step Pills
+    if (activeStepKey) {
+      const steps = ['desk', 'mob', 'tab', 'frame', 'comp', 'exp'];
+      const currentIndex = steps.indexOf(activeStepKey);
+      stepPills.forEach(pill => {
+        const pillIndex = steps.indexOf(pill.dataset.step);
+        if (pillIndex === currentIndex) {
+          pill.classList.add('active');
+          pill.classList.remove('done');
+        } else if (pillIndex < currentIndex) {
+          pill.classList.add('done');
+          pill.classList.remove('active');
+        } else {
+          pill.classList.remove('active', 'done');
+        }
+      });
+    }
+  }
+
+  function resetStepPills() {
+    stepPills.forEach(pill => pill.classList.remove('active', 'done'));
+    if (deckMacbook) deckMacbook.className = 'deck-device deck-macbook';
+    if (deckIphone) deckIphone.className = 'deck-device deck-iphone';
+    if (deckIpad) deckIpad.className = 'deck-device deck-ipad';
+    if (progressBarFill) progressBarFill.style.width = '0%';
+    if (progressPct) progressPct.textContent = '0%';
+  }
+
+  // Batch Queue Item Renderer
+  function renderBatchQueue(urls) {
+    if (!batchQueueList) return;
+    batchQueueList.innerHTML = urls.map((u, i) => `
+      <div class="batch-queue-item" id="batch-item-${i}">
+        <div class="batch-item-left">
+          <span class="batch-item-index">${i + 1}</span>
+          <span class="batch-item-url" title="${escapeHtml(u)}">${escapeHtml(u)}</span>
+        </div>
+        <div class="batch-item-status" id="batch-item-status-${i}">
+          <span class="batch-item-status-chip status-waiting">Waiting in Queue</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function updateBatchQueueItems(urls, completed, errors, currentIndex, overallStatus) {
+    urls.forEach((u, i) => {
+      const statusContainer = document.getElementById(`batch-item-status-${i}`);
+      if (!statusContainer) return;
+
+      const foundComp = completed.find(c => c.url === u);
+      if (foundComp) {
+        statusContainer.innerHTML = `
+          <span class="batch-item-status-chip status-done">✓ Completed</span>
+          <button type="button" class="batch-preview-link" data-slug="${escapeHtml(foundComp.slug)}">Preview</button>
+        `;
+        const btn = statusContainer.querySelector('.batch-preview-link');
+        if (btn) {
+          btn.addEventListener('click', () => {
+            displayResult(foundComp);
+            if (resultsCard) resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          });
+        }
+        return;
+      }
+
+      const foundErr = errors.find(e => e.url === u);
+      if (foundErr) {
+        statusContainer.innerHTML = `
+          <span class="batch-item-status-chip status-error" title="${escapeHtml(foundErr.error)}">✕ Failed</span>
+        `;
+        return;
+      }
+
+      if (i === currentIndex && overallStatus === 'processing') {
+        statusContainer.innerHTML = `
+          <span class="batch-item-status-chip status-capturing">Capturing...</span>
+        `;
+      } else if (i > currentIndex) {
+        statusContainer.innerHTML = `
+          <span class="batch-item-status-chip status-waiting">Waiting</span>
+        `;
+      }
+    });
+  }
+
+  function listenToBatchEvents(batchId, urls) {
+    let finished = false;
+    const evtSource = new EventSource(`/api/batch/${encodeURIComponent(batchId)}/events`);
+
+    function handleBatchState(job) {
+      const completed = job.completed || [];
+      const errors = job.errors || [];
+      const total = job.total || urls.length;
+      const progress = job.progress || 0;
+      const currentStep = job.current_step || 'Processing queue...';
+      const currentIndex = job.current_index || 0;
+
+      if (batchDeckCounter) {
+        batchDeckCounter.textContent = `${completed.length} of ${total} Completed`;
+      }
+
+      const stepsCycle = ['desk', 'mob', 'tab', 'frame', 'comp', 'exp'];
+      const activeStep = stepsCycle[(currentIndex + completed.length) % stepsCycle.length];
+      updateProgress(progress, `[${currentIndex + 1}/${total}] ${currentStep}`, activeStep);
+
+      updateBatchQueueItems(urls, completed, errors, currentIndex, job.status);
+
+      if (job.status === 'completed') {
+        finished = true;
+        evtSource.close();
+        updateProgress(100, `Batch completed! ${completed.length} showcases generated.`, 'exp');
+        loadHistory();
+        showToast(`Batch generation complete: ${completed.length} showcases generated!`, 'success');
+
+        if (completed.length > 0) {
+          displayResult(completed[completed.length - 1]);
+        }
+        generateBtn.disabled = false;
+        updateSubmitButtonText();
+      }
+    }
+
+    evtSource.onmessage = (event) => {
+      try {
+        const job = JSON.parse(event.data);
+        handleBatchState(job);
+      } catch (e) {}
+    };
+
+    evtSource.onerror = () => {
+      evtSource.close();
+      if (!finished) {
+        pollBatchStatus(batchId, urls);
+      }
+    };
+  }
+
+  async function pollBatchStatus(batchId, urls) {
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/batch/${encodeURIComponent(batchId)}`);
+        if (!res.ok) return;
+        const job = await res.json();
+        
+        const completed = job.completed || [];
+        const errors = job.errors || [];
+        const total = job.total || urls.length;
+        const progress = job.progress || 0;
+        const currentStep = job.current_step || 'Processing queue...';
+        const currentIndex = job.current_index || 0;
+
+        if (batchDeckCounter) {
+          batchDeckCounter.textContent = `${completed.length} of ${total} Completed`;
+        }
+
+        const stepsCycle = ['desk', 'mob', 'tab', 'frame', 'comp', 'exp'];
+        const activeStep = stepsCycle[(currentIndex + completed.length) % stepsCycle.length];
+        updateProgress(progress, `[${currentIndex + 1}/${total}] ${currentStep}`, activeStep);
+
+        updateBatchQueueItems(urls, completed, errors, currentIndex, job.status);
+
+        if (job.status === 'completed') {
+          clearInterval(pollInterval);
+          updateProgress(100, `Batch completed! ${completed.length} showcases generated.`, 'exp');
+          loadHistory();
+          showToast(`Batch generation complete: ${completed.length} showcases generated!`, 'success');
+          if (completed.length > 0) {
+            displayResult(completed[completed.length - 1]);
+          }
+          generateBtn.disabled = false;
+          updateSubmitButtonText();
+        }
+      } catch (e) {}
+    }, 2000);
+  }
+
+  // --------------------------------------------------------------------------
+  // Generator Pipeline Form Submit (Single & Batch Modes)
   // --------------------------------------------------------------------------
   if (form) {
     form.addEventListener('submit', async (e) => {
@@ -580,6 +910,64 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // --- BATCH MODE EXECUTION ---
+      if (currentGenerationMode === 'batch') {
+        const urls = getBatchUrls();
+        if (urls.length === 0) {
+          showToast('Please enter at least one website URL in the batch queue.', 'error');
+          return;
+        }
+        if (urls.length > 15) {
+          showToast('Maximum 15 websites allowed per batch run to maintain server stability.', 'error');
+          return;
+        }
+
+        generateBtn.disabled = true;
+        const btnText = generateBtn.querySelector('.btn-text');
+        if (btnText) btnText.textContent = `Processing Batch (${urls.length} sites)...`;
+
+        if (progressContainer) progressContainer.classList.remove('hidden');
+        if (batchProgressDeck) batchProgressDeck.classList.remove('hidden');
+        if (resultsCard) resultsCard.classList.add('hidden');
+
+        resetStepPills();
+        updateProgress(5, `Starting batch execution for ${urls.length} websites...`, 'desk');
+        renderBatchQueue(urls);
+
+        const payload = {
+          urls: urls,
+          category: categorySelect ? categorySelect.value : null,
+          type: typeSelect ? typeSelect.value : null,
+          mobile_finish: mobileFinishSelect ? mobileFinishSelect.value : 'deep-blue',
+          tablet_finish: tabletFinishSelect ? tabletFinishSelect.value : 'space-black',
+          bg_color: bgColorSelect ? bgColorSelect.value : '#E5E5E5',
+          shadow_intensity: shadowSelect ? shadowSelect.value : 'normal',
+          delay: delaySelect ? parseFloat(delaySelect.value) : 2.5,
+          headless: browserModeSelect ? (browserModeSelect.value === 'headless') : true
+        };
+
+        try {
+          const res = await fetch('/api/generate-batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const batchData = await res.json();
+          if (!res.ok) {
+            throw new Error(batchData.detail || 'Failed to start batch generation');
+          }
+
+          listenToBatchEvents(batchData.batch_id, urls);
+        } catch (err) {
+          showToast(`Batch Error: ${err.message}`, 'error');
+          generateBtn.disabled = false;
+          updateSubmitButtonText();
+          if (progressContainer) progressContainer.classList.add('hidden');
+        }
+        return;
+      }
+
+      // --- SINGLE WEBSITE MODE EXECUTION ---
       let rawUrl = urlInput.value.trim();
       if (!rawUrl) return;
 
@@ -593,12 +981,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const btnText = generateBtn.querySelector('.btn-text');
       if (btnText) btnText.textContent = 'Generating Showcase...';
       if (progressContainer) progressContainer.classList.remove('hidden');
+      if (batchProgressDeck) batchProgressDeck.classList.add('hidden');
       if (resultsCard) resultsCard.classList.add('hidden');
 
       resetStepPills();
       updateProgress(15, 'Accessing website and capturing desktop view...', 'desk');
 
-      // Periodic progress status updates while automated pipeline runs
       const stepInterval = setInterval(() => {
         const currentWidth = parseInt(progressBarFill.style.width || '15', 10);
         if (currentWidth < 35) {
@@ -642,7 +1030,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await response.json();
         updateProgress(100, 'Showcase completed!', 'exp');
 
-        // Populate and display result
         setTimeout(() => {
           if (progressContainer) progressContainer.classList.add('hidden');
           displayResult(data);
@@ -656,37 +1043,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (progressContainer) progressContainer.classList.add('hidden');
       } finally {
         generateBtn.disabled = false;
-        if (btnText) btnText.textContent = 'Generate Portfolio Showcase';
+        updateSubmitButtonText();
       }
     });
-  }
-
-  function updateProgress(percent, msg, activeStepKey) {
-    if (progressBarFill) progressBarFill.style.width = `${percent}%`;
-    if (progressText) progressText.textContent = msg;
-
-    if (activeStepKey) {
-      stepPills.forEach(pill => {
-        if (pill.dataset.step === activeStepKey) {
-          pill.classList.add('active');
-          pill.classList.remove('done');
-        } else {
-          const steps = ['desk', 'mob', 'tab', 'frame', 'comp', 'exp'];
-          const currentIndex = steps.indexOf(activeStepKey);
-          const pillIndex = steps.indexOf(pill.dataset.step);
-          if (pillIndex < currentIndex) {
-            pill.classList.add('done');
-            pill.classList.remove('active');
-          } else {
-            pill.classList.remove('active', 'done');
-          }
-        }
-      });
-    }
-  }
-
-  function resetStepPills() {
-    stepPills.forEach(pill => pill.classList.remove('active', 'done'));
   }
 
   // --------------------------------------------------------------------------

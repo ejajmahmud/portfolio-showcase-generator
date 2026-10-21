@@ -103,36 +103,82 @@
           </div>
         </div>
 
+        <!-- Apple HIG Mode Switcher (Single Website vs Batch Queue) -->
+        <div class="generation-mode-switch-wrapper">
+          <div class="segmented-control apple-segmented" role="tablist">
+            <button type="button" class="segmented-btn active" id="mode-btn-single" data-mode="single" role="tab" aria-selected="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+              <span>Single Website</span>
+            </button>
+            <button type="button" class="segmented-btn" id="mode-btn-batch" data-mode="batch" role="tab" aria-selected="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                <path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"></path>
+              </svg>
+              <span>Batch Queue Mode</span>
+              <span class="mode-badge-pill">Multiple</span>
+            </button>
+          </div>
+        </div>
+
         <form id="generator-form" class="generator-form">
-          <!-- Row 1: Core Fields -->
-          <div class="form-row main-input-row">
-            <div class="input-group url-group">
-              <label for="site-url">
-                <span class="label-text">Website URL</span>
-                <span class="label-hint">Live project address</span>
-              </label>
-              <div class="input-wrapper">
-                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="2" y1="12" x2="22" y2="12"></line>
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                </svg>
-                <input type="text" id="site-url" placeholder="https://client-domain.com" required autocomplete="off" />
+          <!-- Mode 1: Single Website Input Row -->
+          <div id="single-input-mode" class="single-input-container">
+            <div class="form-row main-input-row">
+              <div class="input-group url-group">
+                <label for="site-url">
+                  <span class="label-text">Website URL</span>
+                  <span class="label-hint">Live project address</span>
+                </label>
+                <div class="input-wrapper">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                  </svg>
+                  <input type="text" id="site-url" placeholder="https://client-domain.com" required autocomplete="off" />
+                </div>
+              </div>
+
+              <div class="input-group name-group">
+                <label for="project-name">
+                  <span class="label-text">Project Title</span>
+                  <span class="label-hint">Optional</span>
+                </label>
+                <div class="input-wrapper">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <input type="text" id="project-name" placeholder="e.g. Capace, Dalwa7" autocomplete="off" />
+                </div>
               </div>
             </div>
+          </div>
 
-            <div class="input-group name-group">
-              <label for="project-name">
-                <span class="label-text">Project Title</span>
-                <span class="label-hint">Optional</span>
-              </label>
-              <div class="input-wrapper">
-                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                <input type="text" id="project-name" placeholder="e.g. Capace, Dalwa7" autocomplete="off" />
+          <!-- Mode 2: Batch Queue Input Container -->
+          <div id="batch-input-mode" class="batch-input-container hidden">
+            <div class="input-group">
+              <div class="batch-label-row">
+                <label for="batch-urls-input">
+                  <span class="label-text">Website URLs (Multi-Site Queue)</span>
+                  <span class="label-hint">One URL per line (up to 15 sites)</span>
+                </label>
+                <span id="batch-detected-badge" class="batch-detected-badge">0 websites</span>
               </div>
+              <div class="input-wrapper textarea-wrapper">
+                <textarea id="batch-urls-input" class="styled-textarea" rows="4" placeholder="https://apple.com&#10;https://stripe.com&#10;https://linear.app&#10;https://framer.com"></textarea>
+              </div>
+              <div class="batch-quick-actions">
+                <button type="button" class="batch-quick-chip" id="btn-sample-sites">+ Load Sample Sites</button>
+                <button type="button" class="batch-clear-chip" id="batch-clear-btn">Clear Queue</button>
+              </div>
+            </div>
+          </div>
             </div>
           </div>
 
@@ -264,22 +310,135 @@
           </button>
         </form>
 
-        <!-- Progress Tracker -->
-        <div id="progress-container" class="progress-container hidden">
-          <div class="progress-bar-bg">
-            <div id="progress-bar-fill" class="progress-bar-fill"></div>
+        <!-- Apple HIG Interactive Holographic Progress Stage & Queue Monitor -->
+        <div id="progress-container" class="progress-container apple-waiting-stage hidden">
+          <!-- 3D Vector Apple Device Deck (Visualizes live viewport captures in real-time) -->
+          <div class="apple-stage-deck" id="stage-deck" aria-hidden="true">
+            <!-- Left: iPhone 15 Pro Perspective Card -->
+            <div class="deck-device deck-iphone" id="deck-iphone" data-device="mob">
+              <div class="device-bezel">
+                <div class="device-island"></div>
+                <div class="device-screen">
+                  <div class="screen-wireframe">
+                    <div class="wire-hero"></div>
+                    <div class="wire-card"></div>
+                    <div class="wire-card"></div>
+                  </div>
+                  <div class="device-scanline"></div>
+                  <div class="device-check-badge">✓</div>
+                </div>
+              </div>
+              <div class="device-label">iPhone Viewport</div>
+            </div>
+
+            <!-- Center: MacBook Pro 16" Centerpiece -->
+            <div class="deck-device deck-macbook" id="deck-macbook" data-device="desk">
+              <div class="macbook-screen-lid">
+                <div class="device-notch"></div>
+                <div class="device-screen">
+                  <div class="screen-wireframe">
+                    <div class="wire-nav"></div>
+                    <div class="wire-hero-wide"></div>
+                    <div class="wire-row">
+                      <div class="wire-col"></div>
+                      <div class="wire-col"></div>
+                      <div class="wire-col"></div>
+                    </div>
+                  </div>
+                  <div class="device-scanline"></div>
+                  <div class="device-check-badge">✓</div>
+                </div>
+              </div>
+              <div class="macbook-base">
+                <div class="macbook-notch-cutout"></div>
+              </div>
+              <div class="device-label">Studio Canvas (Desktop)</div>
+            </div>
+
+            <!-- Right: iPad Pro Perspective Card -->
+            <div class="deck-device deck-ipad" id="deck-ipad" data-device="tab">
+              <div class="device-bezel">
+                <div class="device-screen">
+                  <div class="screen-wireframe">
+                    <div class="wire-hero-mid"></div>
+                    <div class="wire-row">
+                      <div class="wire-col"></div>
+                      <div class="wire-col"></div>
+                    </div>
+                  </div>
+                  <div class="device-scanline"></div>
+                  <div class="device-check-badge">✓</div>
+                </div>
+              </div>
+              <div class="device-label">iPad Viewport</div>
+            </div>
           </div>
-          <div class="progress-status">
-            <div class="spinner"></div>
-            <span id="progress-text" class="progress-message">Connecting to target website...</span>
+
+          <!-- macOS System Capsule Progress Card -->
+          <div class="apple-progress-card">
+            <div class="progress-meta-row">
+              <div class="progress-title-block">
+                <div class="apple-live-indicator">
+                  <span class="live-pulse-dot"></span>
+                </div>
+                <span id="progress-text" class="progress-message">Connecting to target website...</span>
+              </div>
+              <div class="progress-time-stat">
+                <span id="progress-pct" class="progress-pct-badge">0%</span>
+              </div>
+            </div>
+
+            <!-- macOS Smooth Capsule Progress Bar -->
+            <div class="apple-capsule-track">
+              <div id="progress-bar-fill" class="apple-capsule-fill" style="width: 0%;">
+                <div class="apple-capsule-laser"></div>
+              </div>
+            </div>
+
+            <!-- Apple iOS Step Pills with Status Lights -->
+            <div class="progress-steps apple-steps">
+              <div class="step-pill" id="step-desk" data-step="desk">
+                <span class="pill-dot"></span>
+                <span>Desktop</span>
+              </div>
+              <div class="step-pill" id="step-mob" data-step="mob">
+                <span class="pill-dot"></span>
+                <span>iPhone</span>
+              </div>
+              <div class="step-pill" id="step-tab" data-step="tab">
+                <span class="pill-dot"></span>
+                <span>iPad</span>
+              </div>
+              <div class="step-pill" id="step-frame" data-step="frame">
+                <span class="pill-dot"></span>
+                <span>Framing</span>
+              </div>
+              <div class="step-pill" id="step-comp" data-step="comp">
+                <span class="pill-dot"></span>
+                <span>Composition</span>
+              </div>
+              <div class="step-pill" id="step-exp" data-step="exp">
+                <span class="pill-dot"></span>
+                <span>Export</span>
+              </div>
+            </div>
           </div>
-          <div class="progress-steps">
-            <div class="step-pill" id="step-desk" data-step="desk">Desktop View</div>
-            <div class="step-pill" id="step-mob" data-step="mob">Mobile View</div>
-            <div class="step-pill" id="step-tab" data-step="tab">Tablet View</div>
-            <div class="step-pill" id="step-frame" data-step="frame">Device Framing</div>
-            <div class="step-pill" id="step-comp" data-step="comp">Composition</div>
-            <div class="step-pill" id="step-exp" data-step="exp">File Export</div>
+
+          <!-- Batch Queue Monitor Deck (Active in Batch Mode) -->
+          <div id="batch-progress-deck" class="batch-progress-deck hidden">
+            <div class="batch-deck-header">
+              <div class="batch-deck-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                  <path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"></path>
+                </svg>
+                <span>Live Batch Queue Execution</span>
+              </div>
+              <span id="batch-deck-counter" class="batch-deck-counter">0 of 0 Completed</span>
+            </div>
+            <div class="batch-queue-list" id="batch-queue-list">
+              <!-- Live batch job rows injected dynamically -->
+            </div>
           </div>
         </div>
       </section>
