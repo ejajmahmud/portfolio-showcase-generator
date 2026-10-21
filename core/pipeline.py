@@ -52,7 +52,7 @@ def generate_portfolio_assets(
     
     # Step 2: Framing
     if progress_callback:
-        progress_callback("framing", f"Framing Mobile with bezel.fit iPhone 17 Pro Max ({mobile_finish})...")
+        progress_callback("framing", f"Applying device frames ({mobile_finish})...")
         
     framed_mob = frame_iphone(capture_data["mobile"], finish=mobile_finish)
     framed_tab = frame_tablet(capture_data["tablet"], finish=tablet_finish)

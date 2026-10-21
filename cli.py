@@ -5,16 +5,16 @@ from core.pipeline import generate_portfolio_assets
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Automated Website Portfolio Showcase Generator with bezel.fit iPhone 17 Pro Max framing"
+        description="Automated Multi-Device Website Portfolio Showcase Generator"
     )
     parser.add_argument("url", help="Target website URL (e.g. https://example.com)")
     parser.add_argument("--name", "-n", default=None, help="Project name (defaults to page title)")
-    parser.add_argument("--category", "-c", default=None, help="Shinjiru portfolio category (e.g. Technology & Apps)")
+    parser.add_argument("--category", "-c", default=None, help="Portfolio industry category")
     parser.add_argument("--type", "-t", default=None, choices=["Business", "E-commerce"], help="Website type (Business or E-commerce)")
     parser.add_argument("--finish", "-f", default="deep-blue", choices=["deep-blue", "silver", "cosmic-orange"],
-                        help="iPhone 17 Pro Max finish (default: deep-blue)")
-    parser.add_argument("--tablet", "-t", default="space-black", choices=["space-black", "silver"],
-                        help="iPad finish (default: space-black)")
+                        help="Smartphone finish (default: deep-blue)")
+    parser.add_argument("--tablet", "-tab", default="space-black", choices=["space-black", "silver"],
+                        help="Tablet finish (default: space-black)")
     parser.add_argument("--bg", default="#E5E5E5",
                         help="Background color ('#E5E5E5', 'transparent', or hex code)")
     parser.add_argument("--shadow", default="normal", choices=["subtle", "normal", "bold"],
@@ -31,7 +31,7 @@ def main():
         print(f"[{step.upper()}] {message}")
 
     print(f"Starting showcase generation for: {args.url}")
-    print(f"Frame: iPhone 17 Pro Max ({args.finish}) from bezel.fit + iPad ({args.tablet})")
+    print(f"Devices: Smartphone ({args.finish}) + Tablet ({args.tablet}) + Extended Desktop")
     
     try:
         result = generate_portfolio_assets(

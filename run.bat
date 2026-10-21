@@ -1,7 +1,7 @@
 @echo off
 title Portfolio Showcase Studio
 echo ========================================================
-echo   Portfolio Showcase Generator (bezel.fit iPhone 17 Pro Max)
+echo   Portfolio Showcase Studio — Multi-Device Asset Pipeline
 echo ========================================================
 echo.
 cd /d "%~dp0"
