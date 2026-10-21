@@ -21,9 +21,14 @@
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Monaco, Consolas, monospace;
 
-  /* Authentic Apple macOS System Canvas (Clean, Minimal, Pristine) */
-  --bg-app: #f5f5f7;
-  --bg-mesh: linear-gradient(180deg, #fafafc 0%, #f5f5f7 35%, #ededf2 100%);
+  /* Authentic Apple macOS Light Mode Grain Gradient Canvas */
+  --bg-app: #ebeef5;
+  --bg-mesh: 
+    radial-gradient(circle at 14% 12%, rgba(214, 226, 248, 0.75) 0%, transparent 50%),
+    radial-gradient(circle at 86% 16%, rgba(226, 220, 246, 0.70) 0%, transparent 48%),
+    radial-gradient(circle at 50% 85%, rgba(218, 234, 252, 0.60) 0%, transparent 52%),
+    radial-gradient(circle at 80% 82%, rgba(206, 222, 245, 0.55) 0%, transparent 44%),
+    linear-gradient(180deg, #f7f8fc 0%, #ebeef6 45%, #e1e5f0 100%);
 
   /* Liquid Glass Surfaces (macOS Frosted Glass Windows) */
   --glass-bg: rgba(255, 255, 255, 0.84);
@@ -80,9 +85,9 @@
   --badge-accent-bg: rgba(0, 113, 227, 0.10);
   --badge-accent-text: #0071e3;
 
-  /* Grain Texture Blending in Light Mode */
-  --grain-opacity: 0;
-  --grain-blend: normal;
+  /* Tactile Analog Film Grain Texture in Light Mode */
+  --grain-opacity: 0.052;
+  --grain-blend: multiply;
 
   /* Preview Canvas Background */
   --preview-canvas-bg: #E5E5E5;
@@ -1565,12 +1570,20 @@ body {
   }
   .apple-segmented {
     width: 100%;
+    display: flex;
+    box-sizing: border-box;
+    padding: 3px;
   }
   .segmented-btn {
     flex: 1;
     justify-content: center;
-    padding: 8px 10px;
-    font-size: 12px;
+    padding: 7px 8px;
+    font-size: 11.5px;
+    gap: 5px;
+  }
+  .mode-badge-pill {
+    padding: 1px 5px;
+    font-size: 9.5px;
   }
 }
 
