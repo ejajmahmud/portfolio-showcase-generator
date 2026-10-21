@@ -60,28 +60,28 @@ document.addEventListener('DOMContentLoaded', () => {
   // Progress UI Elements
   const progressContainer = document.getElementById('progress-container');
   const progressBarFill = document.getElementById('progress-bar-fill');
-  const progressText = document.getElementById('progress-text');
+  const progressText = document.getElementById('progress-text') || document.getElementById('progress-message');
   const stepPills = document.querySelectorAll('.step-pill');
 
   // Result Section Elements
   const resultsCard = document.getElementById('results-card');
   const resultTitle = document.getElementById('result-title');
   const resultUrl = document.getElementById('result-url');
-  const resultPreviewImg = document.getElementById('result-preview-img');
-  const previewContainer = document.getElementById('preview-container');
-  const toggleTransparencyBtn = document.getElementById('toggle-transparency-btn');
-  const viewFullResBtn = document.getElementById('view-full-res-btn');
-  const viewTabs = document.querySelectorAll('.view-tab');
+  const resultPreviewImg = document.getElementById('result-preview-img') || document.getElementById('preview-image');
+  const previewContainer = document.getElementById('preview-container') || document.getElementById('preview-stage');
+  const toggleTransparencyBtn = document.getElementById('toggle-transparency-btn') || document.getElementById('toggle-bg-btn');
+  const viewFullResBtn = document.getElementById('view-full-res-btn') || document.getElementById('open-full-btn');
+  const viewTabs = document.querySelectorAll('.view-tab, .tab-btn');
 
   // Download Links
-  const dlShowcasePng = document.getElementById('dl-showcase-png');
-  const dlShowcaseWebp = document.getElementById('dl-showcase-webp');
-  const dlShowcaseJpg = document.getElementById('dl-showcase-jpg');
+  const dlShowcasePng = document.getElementById('dl-showcase-png') || document.getElementById('btn-dl-png');
+  const dlShowcaseWebp = document.getElementById('dl-showcase-webp') || document.getElementById('btn-dl-webp');
+  const dlShowcaseJpg = document.getElementById('dl-showcase-jpg') || document.getElementById('btn-dl-jpg');
   const dlMobilePng = document.getElementById('dl-mobile-png');
   const dlTabletPng = document.getElementById('dl-tablet-png');
   const dlDesktopPng = document.getElementById('dl-desktop-png');
   const dlMetadataJson = document.getElementById('dl-metadata-json');
-  const dlZipAll = document.getElementById('dl-zip-all');
+  const dlZipAll = document.getElementById('dl-zip-all') || document.getElementById('btn-dl-zip');
 
   // History & Pagination Elements
   const historyGrid = document.getElementById('history-grid');
@@ -196,6 +196,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (userModal) {
     userModal.addEventListener('click', (e) => {
       if (e.target === userModal) {
+        userModal.classList.add('hidden');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !userModal.classList.contains('hidden')) {
         userModal.classList.add('hidden');
       }
     });

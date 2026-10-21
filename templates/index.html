@@ -10,11 +10,13 @@
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-  <!-- Ambient Liquid Glowing Canvas -->
+  <!-- Ambient Liquid Canvas & Dark Grain Gradient Backdrop -->
+  <div class="liquid-grain-overlay" aria-hidden="true"></div>
   <div class="liquid-canvas" aria-hidden="true">
     <div class="liquid-orb orb-1"></div>
     <div class="liquid-orb orb-2"></div>
     <div class="liquid-orb orb-3"></div>
+    <div class="liquid-orb orb-4"></div>
   </div>
 
   <div class="app-container">
@@ -269,15 +271,15 @@
           </div>
           <div class="progress-status">
             <div class="spinner"></div>
-            <span id="progress-message">Connecting to target website...</span>
+            <span id="progress-text" class="progress-message">Connecting to target website...</span>
           </div>
           <div class="progress-steps">
-            <div class="step-pill" id="step-desk">Desktop View</div>
-            <div class="step-pill" id="step-mob">Mobile View</div>
-            <div class="step-pill" id="step-tab">Tablet View</div>
-            <div class="step-pill" id="step-frame">Device Framing</div>
-            <div class="step-pill" id="step-comp">Composition</div>
-            <div class="step-pill" id="step-exp">File Export</div>
+            <div class="step-pill" id="step-desk" data-step="desk">Desktop View</div>
+            <div class="step-pill" id="step-mob" data-step="mob">Mobile View</div>
+            <div class="step-pill" id="step-tab" data-step="tab">Tablet View</div>
+            <div class="step-pill" id="step-frame" data-step="frame">Device Framing</div>
+            <div class="step-pill" id="step-comp" data-step="comp">Composition</div>
+            <div class="step-pill" id="step-exp" data-step="exp">File Export</div>
           </div>
         </div>
       </section>
@@ -288,33 +290,33 @@
           <div class="results-info">
             <h2 id="result-title">Project Showcase</h2>
             <div class="results-meta-row">
-              <span id="result-url" class="result-url">https://example.com</span>
+              <a id="result-url" class="result-url" href="#" target="_blank" rel="noopener">https://example.com</a>
               <span id="result-category-badge" class="badge-tag hidden"></span>
               <span id="result-type-badge" class="badge-tag accent hidden"></span>
             </div>
           </div>
 
-          <!-- View Switcher Tabs -->
+          <!-- View Switcher Tabs (Segmented Control) -->
           <div class="tab-switcher">
-            <button class="tab-btn active" data-view="showcase">Full Showcase</button>
-            <button class="tab-btn" data-view="mobile">Mobile View</button>
-            <button class="tab-btn" data-view="tablet">Tablet View</button>
-            <button class="tab-btn" data-view="desktop">Desktop View</button>
+            <button class="tab-btn view-tab active" data-view="showcase">Full Showcase</button>
+            <button class="tab-btn view-tab" data-view="mobile">Mobile View</button>
+            <button class="tab-btn view-tab" data-view="tablet">Tablet View</button>
+            <button class="tab-btn view-tab" data-view="desktop">Desktop View</button>
           </div>
         </div>
 
         <!-- Canvas / Preview Box -->
         <div class="preview-stage" id="preview-stage">
           <div class="preview-backdrop" id="preview-backdrop">
-            <img id="preview-image" src="" alt="Project Showcase Preview" />
+            <img id="result-preview-img" src="" alt="Project Showcase Preview" />
           </div>
           <div class="stage-controls">
-            <button id="toggle-bg-btn" class="stage-control-btn" title="Toggle Transparency Background">
+            <button id="toggle-transparency-btn" class="stage-control-btn" title="Toggle Transparency Background">
               Toggle Transparency
             </button>
-            <a id="open-full-btn" href="#" target="_blank" class="stage-control-btn" title="Open Full Resolution">
+            <button id="view-full-res-btn" class="stage-control-btn" title="Open Full Resolution">
               Full Resolution
-            </a>
+            </button>
           </div>
         </div>
 
@@ -322,25 +324,25 @@
         <div class="download-section">
           <div class="download-title">Download Formats</div>
           <div class="download-buttons">
-            <a id="btn-dl-webp" href="#" download class="dl-btn format-webp">
+            <a id="dl-showcase-webp" href="#" download class="dl-btn format-webp">
               <span class="dl-badge">WEBP</span>
               <span class="dl-desc">High-Efficiency Web Format</span>
               <span class="dl-action">Download WebP</span>
             </a>
 
-            <a id="btn-dl-png" href="#" download class="dl-btn format-png">
+            <a id="dl-showcase-png" href="#" download class="dl-btn format-png">
               <span class="dl-badge">PNG</span>
               <span class="dl-desc">Lossless High Resolution</span>
               <span class="dl-action">Download PNG</span>
             </a>
 
-            <a id="btn-dl-jpg" href="#" download class="dl-btn format-jpg">
+            <a id="dl-showcase-jpg" href="#" download class="dl-btn format-jpg">
               <span class="dl-badge">JPG</span>
               <span class="dl-desc">Universal Image (95%)</span>
               <span class="dl-action">Download JPG</span>
             </a>
 
-            <a id="btn-dl-zip" href="#" download class="dl-btn format-zip highlight">
+            <a id="dl-zip-all" href="#" download class="dl-btn format-zip highlight">
               <span class="dl-badge">FULL ARCHIVE</span>
               <span class="dl-desc">All Formats + Metadata JSON</span>
               <span class="dl-action">Download ZIP Package</span>
