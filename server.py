@@ -75,7 +75,10 @@ def save_history(entry):
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    try:
+        return templates.TemplateResponse(request=request, name="index.html")
+    except TypeError:
+        return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/api/generate")
 async def generate_showcase(req: GenerateRequest):
