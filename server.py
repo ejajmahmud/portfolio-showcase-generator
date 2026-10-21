@@ -2,21 +2,37 @@ import os
 import json
 import glob
 import asyncio
-from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
-from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
+from fastapi import FastAPI, Request, BackgroundTasks, HTTPException, Depends
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 from core.pipeline import generate_portfolio_assets, slugify
+from core.auth import (
+    init_auth,
+    authenticate_user,
+    create_token,
+    verify_token,
+    get_user,
+    list_users,
+    create_user,
+    update_user,
+    delete_user,
+    ROLES,
+    ROLE_PERMISSIONS
+)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EXPORTS_DIR = os.path.join(BASE_DIR, "exports")
 os.makedirs(EXPORTS_DIR, exist_ok=True)
 
-app = FastAPI(title="Portfolio Showcase Generator", version="1.0.0")
+# Initialize authentication persistence & default admin
+init_auth()
+
+app = FastAPI(title="Portfolio Showcase Studio", version="1.1.0")
 
 # Enable CORS for public access
 app.add_middleware(
@@ -44,6 +60,23 @@ app.mount("/.well-known/acme-challenge", StaticFiles(directory=ACME_DIR), name="
 
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
+# --- Pydantic Request Models ---
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class CreateUserRequest(BaseModel):
+    username: str
+    password: str
+    role: str = "creator"
+    display_name: Optional[str] = None
+
+class UpdateUserRequest(BaseModel):
+    password: Optional[str] = None
+    role: Optional[str] = None
+    display_name: Optional[str] = None
+    is_active: Optional[bool] = None
+
 class GenerateRequest(BaseModel):
     url: str
     name: Optional[str] = None
@@ -57,7 +90,39 @@ class GenerateRequest(BaseModel):
     hide_banners: Optional[bool] = True
     headless: Optional[bool] = True
 
-# In-memory history cache
+# --- Authentication Helpers & RBAC Dependencies ---
+def get_current_user_from_request(request: Request) -> Optional[dict]:
+    token = request.cookies.get("session_token")
+    if not token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1].strip()
+    if token:
+        payload = verify_token(token)
+        if payload:
+            user = get_user(payload.get("sub", ""))
+            if user and user.get("is_active", True):
+                return user
+    return None
+
+def require_auth(request: Request) -> dict:
+    user = get_current_user_from_request(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required. Please sign in.")
+    return user
+
+def require_role(allowed_roles: List[str]):
+    def dependency(request: Request) -> dict:
+        user = require_auth(request)
+        if user.get("role") not in allowed_roles:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Access denied: This operation requires one of {allowed_roles} roles. Your role is '{user.get('role')}'."
+            )
+        return user
+    return dependency
+
+# --- History Persistence ---
 HISTORY_FILE = os.path.join(EXPORTS_DIR, "history.json")
 
 def load_history():
@@ -79,16 +144,120 @@ def save_history(entry):
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=2)
 
+# --- Frontend Routes ---
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    user = get_current_user_from_request(request)
+    if user:
+        return RedirectResponse(url="/", status_code=302)
+    try:
+        return templates.TemplateResponse(request=request, name="login.html")
+    except TypeError:
+        return templates.TemplateResponse("login.html", {"request": request})
+
 @app.get("/", response_class=HTMLResponse)
 @app.head("/")
 async def index(request: Request):
+    user = get_current_user_from_request(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
     try:
-        return templates.TemplateResponse(request=request, name="index.html")
+        return templates.TemplateResponse(request=request, name="index.html", context={"request": request, "user": user})
     except TypeError:
-        return templates.TemplateResponse("index.html", {"request": request})
+        return templates.TemplateResponse("index.html", {"request": request, "user": user})
 
+# --- Authentication API ---
+@app.post("/api/auth/login")
+async def api_login(req: LoginRequest, request: Request):
+    user = authenticate_user(req.username, req.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid username or password.")
+    token = create_token(user["username"], user["role"], user["display_name"])
+    
+    response = JSONResponse(content={
+        "success": True,
+        "user": user,
+        "token": token
+    })
+    is_https = (request.url.scheme == "https") or (request.headers.get("x-forwarded-proto") == "https")
+    response.set_cookie(
+        key="session_token",
+        value=token,
+        httponly=True,
+        max_age=7 * 86400,
+        samesite="lax",
+        secure=is_https
+    )
+    return response
+
+@app.post("/api/auth/logout")
+async def api_logout():
+    response = JSONResponse(content={"success": True})
+    response.delete_cookie(key="session_token")
+    return response
+
+@app.get("/api/auth/me")
+async def api_me(request: Request):
+    user = require_auth(request)
+    perms = ROLE_PERMISSIONS.get(user["role"], {})
+    return {
+        "user": user,
+        "permissions": perms
+    }
+
+# --- User Management API (Admin Only) ---
+@app.get("/api/users")
+async def api_list_users(request: Request):
+    require_role(["admin"])(request)
+    return list_users()
+
+@app.post("/api/users")
+async def api_create_user(req: CreateUserRequest, request: Request):
+    require_role(["admin"])(request)
+    try:
+        user = create_user(
+            username=req.username,
+            password=req.password,
+            role=req.role,
+            display_name=req.display_name
+        )
+        return {"success": True, "user": user}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.put("/api/users/{username}")
+async def api_update_user(username: str, req: UpdateUserRequest, request: Request):
+    require_role(["admin"])(request)
+    try:
+        user = update_user(
+            username=username,
+            password=req.password,
+            role=req.role,
+            display_name=req.display_name,
+            is_active=req.is_active
+        )
+        return {"success": True, "user": user}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.delete("/api/users/{username}")
+async def api_delete_user(username: str, request: Request):
+    current_user = require_role(["admin"])(request)
+    if current_user["username"] == username.strip().lower():
+        raise HTTPException(status_code=400, detail="Cannot delete your own active administrator account.")
+    try:
+        success = delete_user(username)
+        if not success:
+            raise HTTPException(status_code=404, detail="User not found.")
+        return {"success": True}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# --- Generation API (Creators & Admins Only) ---
 @app.post("/api/generate")
-async def generate_showcase(req: GenerateRequest):
+async def generate_showcase(req: GenerateRequest, request: Request):
+    user = require_role(["admin", "creator"])(request)
+    
     url = req.url.strip()
     if not url.startswith("http://") and not url.startswith("https://"):
         url = "https://" + url
@@ -128,6 +297,7 @@ async def generate_showcase(req: GenerateRequest):
             "type": result.get("type", ""),
             "mobile_finish": req.mobile_finish,
             "exports": relative_exports,
+            "created_by": user["username"],
             "created_at": None
         }
         save_history(history_item)
@@ -147,11 +317,24 @@ async def generate_showcase(req: GenerateRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/history")
-async def get_history():
+async def get_history(request: Request):
+    require_auth(request)
     return load_history()
 
+@app.delete("/api/history/{slug}")
+async def delete_history_showcase(slug: str, request: Request):
+    require_role(["admin"])(request)
+    history = load_history()
+    new_history = [h for h in history if h.get("slug") != slug]
+    if len(new_history) == len(history):
+        raise HTTPException(status_code=404, detail="Showcase not found.")
+    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(new_history, f, indent=2)
+    return {"success": True}
+
 @app.get("/api/download/{project}/{filename}")
-async def download_file(project: str, filename: str):
+async def download_file(project: str, filename: str, request: Request):
+    require_auth(request)
     file_path = os.path.join(EXPORTS_DIR, project, filename)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
@@ -161,5 +344,5 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
     host = os.environ.get("HOST", "0.0.0.0")
-    print(f"Starting Portfolio Showcase Generator on http://{host}:{port}")
+    print(f"Starting Portfolio Showcase Studio on http://{host}:{port}")
     uvicorn.run("server:app", host=host, port=port, reload=False)
