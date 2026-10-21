@@ -229,6 +229,16 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
 
 def get_user(username: str) -> Optional[Dict[str, Any]]:
     """Gets user by username, stripped of password hash and salt."""
+    if not username:
+        return None
+    if username.strip().lower() == "guest":
+        return {
+            "username": "guest",
+            "display_name": "Guest User",
+            "role": "guest",
+            "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "is_active": True
+        }
     users = load_users()
     u = users.get(username.strip().lower())
     if not u:

@@ -152,7 +152,15 @@ def get_current_user_from_request(request: Request) -> Optional[dict]:
     if token:
         payload = verify_token(token)
         if payload:
-            user = get_user(payload.get("sub", ""))
+            sub = payload.get("sub", "")
+            if sub == "guest" or payload.get("role") == "guest":
+                return {
+                    "username": "guest",
+                    "role": "guest",
+                    "display_name": payload.get("name", "Guest User"),
+                    "is_active": True
+                }
+            user = get_user(sub)
             if user and user.get("is_active", True):
                 return user
     return None
