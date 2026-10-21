@@ -1,7 +1,13 @@
+# ==============================================================================
+# Designed, Planned & Developed by Ejaj Mahmud
+# Portfolio Image Generator - Enterprise Web & Asset Automation Pipeline
+# Copyright (c) 2026 Shinjiru Technology Sdn. Bhd. All rights reserved.
+# ==============================================================================
+
 """
 Portfolio Showcase Studio — Authentication & RBAC Module
 Provides secure PBKDF2-HMAC password hashing, HMAC-signed session tokens,
-user persistence, and Role-Based Access Control (Admin, Creator, Viewer).
+user persistence, and Role-Based Access Control (Admin, Creator, Guest, Viewer).
 """
 
 import os
@@ -13,7 +19,7 @@ import hashlib
 import secrets
 from typing import Optional, List, Dict, Any
 
-ROLES = ["admin", "creator", "viewer"]
+ROLES = ["admin", "creator", "guest", "viewer"]
 
 ROLE_PERMISSIONS = {
     "admin": {
@@ -31,6 +37,14 @@ ROLE_PERMISSIONS = {
         "can_delete_history": False,
         "can_manage_users": False,
         "description": "Can generate multi-device showcases, browse gallery, and download assets."
+    },
+    "guest": {
+        "can_generate": True,
+        "can_download": True,
+        "can_view_history": True,
+        "can_delete_history": False,
+        "can_manage_users": False,
+        "description": "Guest access: can create showcases, browse gallery, and download assets, but cannot delete or edit."
     },
     "viewer": {
         "can_generate": False,

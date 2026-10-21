@@ -1,3 +1,9 @@
+# ==============================================================================
+# Designed, Planned & Developed by Ejaj Mahmud
+# Portfolio Image Generator - Enterprise Web & Asset Automation Pipeline
+# Copyright (c) 2026 Shinjiru Technology Sdn. Bhd. All rights reserved.
+# ==============================================================================
+
 import os
 import json
 import glob
@@ -5,6 +11,7 @@ import shutil
 import asyncio
 import time
 import uuid
+import mimetypes
 from datetime import datetime, timezone
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException, Depends
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, RedirectResponse, StreamingResponse
@@ -13,6 +20,17 @@ from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict
+
+# Ensure modern image and document MIME types are explicitly recognized in containerized Linux
+mimetypes.init()
+mimetypes.add_type("image/webp", ".webp")
+mimetypes.add_type("image/png", ".png")
+mimetypes.add_type("image/jpeg", ".jpg")
+mimetypes.add_type("image/jpeg", ".jpeg")
+mimetypes.add_type("image/svg+xml", ".svg")
+mimetypes.add_type("image/x-icon", ".ico")
+mimetypes.add_type("application/zip", ".zip")
+mimetypes.add_type("application/json", ".json")
 
 from core.pipeline import generate_portfolio_assets, slugify
 from core.auth import (
@@ -230,6 +248,36 @@ async def api_logout():
     response.delete_cookie(key="session_token")
     return response
 
+@app.post("/api/auth/guest-login")
+async def api_guest_login(request: Request):
+    """
+    Guest Authentication: Instantly provisions a guest session with
+    creator permissions for showcase generation & browsing, but restricted from deletion.
+    """
+    guest_user = {
+        "username": "guest",
+        "role": "guest",
+        "display_name": "Guest User"
+    }
+    token = create_token("guest", "guest")
+    is_https = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
+    
+    response = JSONResponse(content={
+        "success": True,
+        "token": token,
+        "user": guest_user,
+        "redirect": "/"
+    })
+    response.set_cookie(
+        key="session_token",
+        value=token,
+        httponly=True,
+        max_age=3 * 86400,
+        samesite="lax",
+        secure=is_https
+    )
+    return response
+
 @app.get("/api/auth/me")
 async def api_me(request: Request):
     user = require_auth(request)
@@ -287,10 +335,10 @@ async def api_delete_user(username: str, request: Request):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-# --- Generation API (Creators & Admins Only) ---
+# --- Generation API (Creators, Guests & Admins) ---
 @app.post("/api/generate")
 async def generate_showcase(req: GenerateRequest, request: Request):
-    user = require_role(["admin", "creator"])(request)
+    user = require_role(["admin", "creator", "guest"])(request)
     
     url = req.url.strip()
     if not url.startswith("http://") and not url.startswith("https://"):
@@ -441,7 +489,7 @@ async def run_batch_worker(batch_id: str, req: BatchGenerateRequest, username: s
 
 @app.post("/api/generate-batch")
 async def generate_batch_showcase(req: BatchGenerateRequest, request: Request):
-    user = require_role(["admin", "creator"])(request)
+    user = require_role(["admin", "creator", "guest"])(request)
     
     cleaned_urls = []
     seen = set()
@@ -542,7 +590,7 @@ async def get_history(request: Request):
 
 @app.post("/api/history")
 async def create_history_showcase(req: CreateShowcaseRequest, request: Request):
-    user = require_role(["admin", "creator"])(request)
+    user = require_role(["admin", "creator", "guest"])(request)
     url = req.url.strip()
     if not url.startswith("http://") and not url.startswith("https://"):
         url = "https://" + url
@@ -613,7 +661,17 @@ async def update_history_showcase(slug: str, req: UpdateShowcaseRequest, request
 
 @app.delete("/api/history/{slug}")
 async def delete_history_showcase(slug: str, request: Request):
-    user = require_role(["admin", "creator"])(request)
+    user = require_auth(request)
+    if user.get("role") == "guest":
+        raise HTTPException(
+            status_code=403,
+            detail="Guest accounts do not have permission to delete showcases. Please sign in with an Administrator account."
+        )
+    if user.get("role") not in ["admin", "creator"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Access denied: Delete operation requires Administrator or Creator role."
+        )
     history = load_history()
     target = None
     new_history = []

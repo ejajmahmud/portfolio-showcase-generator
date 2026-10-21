@@ -319,6 +319,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (confirmDeleteBtn) {
     confirmDeleteBtn.addEventListener('click', async () => {
       if (!showcaseToDelete) return;
+      if (currentUser && currentUser.role === 'guest') {
+        showToast('Guest accounts cannot delete project showcases. Please sign in with an Administrator account.', 'error');
+        closeDeleteModal();
+        return;
+      }
       const slug = showcaseToDelete.slug;
       const title = showcaseToDelete.title || slug;
       const originalText = confirmDeleteBtn.textContent;
@@ -787,15 +792,28 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   // Interactive Apple 3D Device Stage & Capsule Progress Controller
   // --------------------------------------------------------------------------
+  let progressTextAnimTimer = null;
   function updateProgress(percent, msg, activeStepKey) {
     if (progressBarFill) {
       progressBarFill.style.width = `${percent}%`;
     }
     if (progressPct) {
       progressPct.textContent = `${Math.round(percent)}%`;
+      // Subtle pulse on badge update
+      progressPct.style.transform = 'scale(1.08)';
+      setTimeout(() => { if (progressPct) progressPct.style.transform = 'scale(1)'; }, 180);
     }
-    if (progressText) {
-      progressText.textContent = msg;
+    if (progressText && msg) {
+      if (progressText.textContent !== msg) {
+        progressText.classList.add('anim-fade-out');
+        clearTimeout(progressTextAnimTimer);
+        progressTextAnimTimer = setTimeout(() => {
+          progressText.textContent = msg;
+          progressText.classList.remove('anim-fade-out');
+          progressText.classList.add('anim-fade-in');
+          setTimeout(() => { if (progressText) progressText.classList.remove('anim-fade-in'); }, 300);
+        }, 130);
+      }
     }
 
     // 3D Apple Vector Device Deck Illuminations
@@ -1084,20 +1102,36 @@ document.addEventListener('DOMContentLoaded', () => {
       if (resultsCard) resultsCard.classList.add('hidden');
 
       resetStepPills();
-      updateProgress(15, 'Accessing website and capturing desktop view...', 'desk');
 
-      const stepInterval = setInterval(() => {
-        const currentWidth = parseInt(progressBarFill.style.width || '15', 10);
-        if (currentWidth < 35) {
-          updateProgress(35, 'Capturing responsive smartphone viewport...', 'mob');
-        } else if (currentWidth < 55) {
-          updateProgress(55, 'Capturing tablet viewport...', 'tab');
-        } else if (currentWidth < 75) {
-          updateProgress(75, 'Framing high-resolution device models...', 'frame');
-        } else if (currentWidth < 90) {
-          updateProgress(90, 'Compositing multi-device layout & elevation shadows...', 'comp');
+      const pipelineStages = [
+        { pct: 10, msg: 'Connecting to target website & resolving DNS...', key: 'desk' },
+        { pct: 24, msg: 'Launching Chromium browser & establishing secure handshake...', key: 'desk' },
+        { pct: 40, msg: 'Capturing ultra-HD desktop viewport (1920×1080)...', key: 'desk' },
+        { pct: 55, msg: 'Emulating iPhone 15 Pro Max Safari viewport...', key: 'mob' },
+        { pct: 70, msg: 'Emulating iPad Pro 12.9″ Retina viewport...', key: 'tab' },
+        { pct: 82, msg: 'Framing devices with precision titanium bezels & reflections...', key: 'frame' },
+        { pct: 92, msg: 'Compositing multi-device 3D studio shadows & lighting...', key: 'comp' },
+        { pct: 96, msg: 'Optimizing WebP, lossless PNG & building ZIP bundle...', key: 'exp' }
+      ];
+
+      let currentStageIdx = 0;
+      updateProgress(pipelineStages[0].pct, pipelineStages[0].msg, pipelineStages[0].key);
+
+      const stageDelays = [900, 1300, 1500, 1700, 1700, 1500, 1400];
+      let stepTimeout = null;
+
+      function advancePipeline() {
+        currentStageIdx++;
+        if (currentStageIdx < pipelineStages.length) {
+          const st = pipelineStages[currentStageIdx];
+          updateProgress(st.pct, st.msg, st.key);
+          const nextDelay = stageDelays[currentStageIdx - 1] || 1500;
+          stepTimeout = setTimeout(advancePipeline, nextDelay);
+        } else {
+          updateProgress(97, 'Finalizing asset packaging & metadata verification...', 'exp');
         }
-      }, 3500);
+      }
+      stepTimeout = setTimeout(advancePipeline, stageDelays[0]);
 
       try {
         const payload = {
@@ -1119,7 +1153,7 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify(payload)
         });
 
-        clearInterval(stepInterval);
+        clearTimeout(stepTimeout);
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ detail: 'Generation failed' }));
@@ -1137,10 +1171,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 500);
 
       } catch (err) {
-        clearInterval(stepInterval);
+        clearTimeout(stepTimeout);
         showToast(`Generation Failed: ${err.message}`, 'error');
         if (progressContainer) progressContainer.classList.add('hidden');
       } finally {
+        clearTimeout(stepTimeout);
         generateBtn.disabled = false;
         updateSubmitButtonText();
       }
@@ -1210,25 +1245,38 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!currentResultData || !currentResultData.exports) return;
     const ex = currentResultData.exports;
     let targetSrc = '';
+    let fallbackSrc = '';
 
     switch (viewType) {
       case 'showcase':
         targetSrc = ex.showcase_webp || ex.showcase_png;
+        fallbackSrc = ex.showcase_png || ex.showcase_jpg || '';
         break;
       case 'mobile':
         targetSrc = ex.mobile_webp || ex.mobile_png;
+        fallbackSrc = ex.mobile_png || ex.mobile_jpg || '';
         break;
       case 'tablet':
         targetSrc = ex.tablet_webp || ex.tablet_png;
+        fallbackSrc = ex.tablet_png || ex.tablet_jpg || '';
         break;
       case 'desktop':
         targetSrc = ex.desktop_webp || ex.desktop_png;
+        fallbackSrc = ex.desktop_png || ex.desktop_jpg || '';
         break;
       default:
         targetSrc = ex.showcase_webp || ex.showcase_png;
+        fallbackSrc = ex.showcase_png || ex.showcase_jpg || '';
     }
 
     if (resultPreviewImg && targetSrc) {
+      resultPreviewImg.dataset.fallback = fallbackSrc;
+      resultPreviewImg.onerror = function() {
+        if (this.dataset.fallback && this.src !== this.dataset.fallback) {
+          console.warn('Preview fallback triggered:', this.dataset.fallback);
+          this.src = this.dataset.fallback;
+        }
+      };
       resultPreviewImg.src = targetSrc;
     }
   }
@@ -1303,15 +1351,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const pageItems = filteredHistory.slice(startIdx, endIdx);
 
     const canModify = currentUser && (currentUser.role === 'admin' || currentUser.role === 'creator');
+    const isGuest = currentUser && currentUser.role === 'guest';
 
     // Render cards with Apple Liquid Glass Action Menus & Tooltips
     historyGrid.innerHTML = pageItems.map(item => {
-      const thumbUrl = (item.exports && (item.exports.showcase_webp || item.exports.showcase_png)) || '';
+      const primaryThumb = (item.exports && (item.exports.showcase_webp || item.exports.showcase_png)) || '';
+      const fallbackThumb = (item.exports && (item.exports.showcase_png || item.exports.showcase_jpg)) || '';
       return `
       <div class="history-card-item" data-slug="${escapeHtml(item.slug)}">
         <div class="history-thumb">
-          ${thumbUrl 
-            ? `<img src="${thumbUrl}" alt="${escapeHtml(item.title)}" loading="lazy" />` 
+          ${primaryThumb 
+            ? `<img src="${escapeHtml(primaryThumb)}" data-fallback="${escapeHtml(fallbackThumb)}" alt="${escapeHtml(item.title)}" loading="lazy" onerror="if(this.dataset.fallback && this.src !== this.dataset.fallback){ this.src=this.dataset.fallback; } else { this.style.opacity='0'; }" />` 
             : `<div class="empty-thumb-placeholder">
                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="36" height="36" style="opacity:0.35">
                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -1348,7 +1398,16 @@ document.addEventListener('DOMContentLoaded', () => {
                   <line x1="14" y1="11" x2="14" y2="17"></line>
                 </svg>
               </button>
-            ` : ''}
+            ` : (isGuest ? `
+              <button type="button" class="card-action-btn btn-delete guest-restricted" data-slug="${escapeHtml(item.slug)}" data-tooltip="Delete Showcase (Protected)" aria-label="Delete Showcase">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </button>
+            ` : '')}
           </div>
         </div>
         <div class="history-meta">
@@ -1426,10 +1485,14 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Delete button (Confirmation Dialog)
+    // Delete button (Confirmation Dialog or Guest Protection Alert)
     historyGrid.querySelectorAll('.btn-delete').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (currentUser && currentUser.role === 'guest') {
+          showToast('Guest accounts cannot delete project showcases. Please sign in with an Administrator or Creator account.', 'error');
+          return;
+        }
         const slug = btn.dataset.slug;
         const found = allHistory.find(h => h.slug === slug);
         if (found) openDeleteModal(found);

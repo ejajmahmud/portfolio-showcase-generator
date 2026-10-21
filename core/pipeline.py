@@ -1,3 +1,9 @@
+# ==============================================================================
+# Designed, Planned & Developed by Ejaj Mahmud
+# Portfolio Image Generator - Enterprise Web & Asset Automation Pipeline
+# Copyright (c) 2026 Shinjiru Technology Sdn. Bhd. All rights reserved.
+# ==============================================================================
+
 import os
 import re
 from PIL import Image
