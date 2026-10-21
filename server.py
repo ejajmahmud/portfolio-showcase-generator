@@ -55,6 +55,7 @@ async def health_check():
 
 # Favicon endpoint
 @app.get("/favicon.ico", include_in_schema=False)
+@app.head("/favicon.ico", include_in_schema=False)
 async def get_favicon():
     return FileResponse(os.path.join(BASE_DIR, "static", "img", "favicon.ico"), media_type="image/x-icon")
 
