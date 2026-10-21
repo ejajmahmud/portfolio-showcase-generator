@@ -357,6 +357,7 @@
           <div class="history-title-block">
             <h3>Recent Project Showcases</h3>
             <span class="history-count" id="history-count">0 items</span>
+            <button type="button" id="btn-quick-new-showcase" class="btn-new-showcase" data-tooltip="Create New Showcase">+ New Showcase</button>
           </div>
 
           <!-- Search Bar -->
@@ -473,6 +474,107 @@
       </div>
     </div>
   </div>
+
+  <!-- Edit Showcase Modal (Apple Sheet) -->
+  <div id="edit-showcase-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+    <div class="modal-container apple-sheet">
+      <div class="modal-header">
+        <div class="modal-header-text">
+          <h2 id="edit-modal-title" class="modal-title">Edit Project Showcase</h2>
+          <p class="modal-subtitle">Update project metadata, destination URL, and portfolio taxonomy</p>
+        </div>
+        <button id="close-edit-modal-btn" class="modal-close-btn" aria-label="Close dialog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-showcase-form" class="modal-form">
+          <input type="hidden" id="edit-showcase-slug" />
+          <div class="modal-form-grid">
+            <div class="input-group">
+              <label for="edit-showcase-title">Project Title <span class="required-mark">*</span></label>
+              <input type="text" id="edit-showcase-title" required autocomplete="off" />
+            </div>
+
+            <div class="input-group">
+              <label for="edit-showcase-url">Target URL <span class="required-mark">*</span></label>
+              <input type="text" id="edit-showcase-url" required autocomplete="off" />
+            </div>
+
+            <div class="input-group">
+              <label for="edit-showcase-category">Industry Category</label>
+              <select id="edit-showcase-category" class="styled-select">
+                <option value="">Select Category (Optional)</option>
+                <option value="Argiculture & Animals">Argiculture & Animals</option>
+                <option value="Automotive & Transportation">Automotive & Transportation</option>
+                <option value="Business & Services">Business & Services</option>
+                <option value="Creative & Design">Creative & Design</option>
+                <option value="Consultancy">Consultancy</option>
+                <option value="Community">Community</option>
+                <option value="Education">Education</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Events & Entertainment">Events & Entertainment</option>
+                <option value="Factory & Machinery">Factory & Machinery</option>
+                <option value="Fashion & Beauty">Fashion & Beauty</option>
+                <option value="Film & TV">Film & TV</option>
+                <option value="Finance & Law">Finance & Law</option>
+                <option value="Food & Drinks">Food & Drinks (Food & Beverage)</option>
+                <option value="Health & Medical">Health & Medical</option>
+                <option value="Logistics">Logistics</option>
+                <option value="Music & Bands">Music & Bands</option>
+                <option value="Oils & Gas & Marine">Oils & Gas & Marine</option>
+                <option value="Printing">Printing</option>
+                <option value="Real Estate & Construction">Real Estate & Construction</option>
+                <option value="Sport & Fitness">Sport & Fitness</option>
+                <option value="Technology & Apps">Technology & Apps</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label for="edit-showcase-type">Website Type</label>
+              <select id="edit-showcase-type" class="styled-select">
+                <option value="">Select Type (Optional)</option>
+                <option value="Business">Business</option>
+                <option value="E-commerce">E-commerce</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-form-actions">
+            <button type="button" id="cancel-edit-btn" class="modal-cancel-btn">Cancel</button>
+            <button type="submit" id="save-edit-btn" class="btn-create-user">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Apple Confirmation Alert Dialog -->
+  <div id="confirm-delete-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title">
+    <div class="modal-container apple-alert-sheet">
+      <div class="alert-dialog-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="30" height="30">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <div class="alert-dialog-body">
+        <h2 id="delete-dialog-title" class="alert-dialog-title">Delete Showcase?</h2>
+        <p class="alert-dialog-text">Are you sure you want to permanently delete <strong id="delete-project-name">this project</strong>? This will remove all generated multi-device mockups and cannot be undone.</p>
+      </div>
+      <div class="alert-dialog-actions">
+        <button type="button" id="cancel-delete-btn" class="modal-cancel-btn">Cancel</button>
+        <button type="button" id="confirm-delete-btn" class="modal-destructive-btn">Delete Showcase</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Liquid Glass Toast Notifications -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <script src="/static/js/app.js"></script>
 </body>

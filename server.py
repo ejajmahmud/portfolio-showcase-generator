@@ -1,7 +1,9 @@
 import os
 import json
 import glob
+import shutil
 import asyncio
+from datetime import datetime, timezone
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException, Depends
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -76,6 +78,19 @@ class UpdateUserRequest(BaseModel):
     role: Optional[str] = None
     display_name: Optional[str] = None
     is_active: Optional[bool] = None
+
+class CreateShowcaseRequest(BaseModel):
+    title: str
+    url: str
+    category: Optional[str] = None
+    type: Optional[str] = None
+    slug: Optional[str] = None
+
+class UpdateShowcaseRequest(BaseModel):
+    title: Optional[str] = None
+    url: Optional[str] = None
+    category: Optional[str] = None
+    type: Optional[str] = None
 
 class GenerateRequest(BaseModel):
     url: str
@@ -316,21 +331,110 @@ async def generate_showcase(req: GenerateRequest, request: Request):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+# --- History & Showcase CRUD API ---
 @app.get("/api/history")
 async def get_history(request: Request):
     require_auth(request)
     return load_history()
 
+@app.post("/api/history")
+async def create_history_showcase(req: CreateShowcaseRequest, request: Request):
+    user = require_role(["admin", "creator"])(request)
+    url = req.url.strip()
+    if not url.startswith("http://") and not url.startswith("https://"):
+        url = "https://" + url
+
+    slug = req.slug or slugify(req.title or url.split("//")[-1].split("/")[0])
+    history = load_history()
+    
+    # Check if slug exists
+    for h in history:
+        if h.get("slug") == slug:
+            raise HTTPException(status_code=400, detail=f"A showcase with slug '{slug}' already exists.")
+
+    new_item = {
+        "title": req.title.strip(),
+        "slug": slug,
+        "url": url,
+        "category": req.category or "",
+        "type": req.type or "",
+        "mobile_finish": "deep-blue",
+        "exports": {},
+        "created_by": user.get("username", "admin"),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    history.insert(0, new_item)
+    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(history, f, indent=2)
+    return {"success": True, "showcase": new_item}
+
+@app.get("/api/history/{slug}")
+async def get_history_showcase(slug: str, request: Request):
+    require_auth(request)
+    history = load_history()
+    for h in history:
+        if h.get("slug") == slug:
+            return h
+    raise HTTPException(status_code=404, detail="Showcase not found.")
+
+@app.put("/api/history/{slug}")
+async def update_history_showcase(slug: str, req: UpdateShowcaseRequest, request: Request):
+    user = require_role(["admin", "creator"])(request)
+    history = load_history()
+    target = None
+    for h in history:
+        if h.get("slug") == slug:
+            target = h
+            break
+
+    if not target:
+        raise HTTPException(status_code=404, detail="Showcase not found.")
+
+    if req.title is not None:
+        target["title"] = req.title.strip()
+    if req.url is not None:
+        raw_url = req.url.strip()
+        if raw_url and not raw_url.startswith("http://") and not raw_url.startswith("https://"):
+            raw_url = "https://" + raw_url
+        target["url"] = raw_url
+    if req.category is not None:
+        target["category"] = req.category.strip()
+    if req.type is not None:
+        target["type"] = req.type.strip()
+    target["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(history, f, indent=2)
+
+    return {"success": True, "showcase": target}
+
 @app.delete("/api/history/{slug}")
 async def delete_history_showcase(slug: str, request: Request):
-    require_role(["admin"])(request)
+    user = require_role(["admin", "creator"])(request)
     history = load_history()
-    new_history = [h for h in history if h.get("slug") != slug]
-    if len(new_history) == len(history):
+    target = None
+    new_history = []
+    for h in history:
+        if h.get("slug") == slug:
+            target = h
+        else:
+            new_history.append(h)
+
+    if not target:
         raise HTTPException(status_code=404, detail="Showcase not found.")
+
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(new_history, f, indent=2)
-    return {"success": True}
+
+    # Safely remove project files from disk if they exist
+    project_dir = os.path.join(EXPORTS_DIR, slug)
+    if os.path.exists(project_dir) and os.path.isdir(project_dir):
+        try:
+            shutil.rmtree(project_dir)
+        except Exception as e:
+            print(f"Warning: could not delete directory {project_dir}: {e}")
+
+    return {"success": True, "deleted": slug}
 
 @app.get("/api/download/{project}/{filename}")
 async def download_file(project: str, filename: str, request: Request):

@@ -1,16 +1,17 @@
 /* ==========================================================================
    Portfolio Showcase Studio — Apple Liquid Glass Design System
    Crafted with Human Interface Guidelines (HIG) Principles:
-   • Multi-Layer Chromatic Mesh Gradient & Cinematic Film Grain
-   • visionOS & macOS Sonoma/Sequoia Translucent Materials
-   • Dual-Layer Diamond Specular Edge Refraction
-   • Plus Jakarta Sans & SF Pro Display Hierarchy
+   • Authentic macOS / iOS Light Mode: Clean, Titanium-Silver, Zero AI-Slop Blobs
+   • visionOS & macOS Sequoia Dark Grain Gradient Background
+   • Complete CRUD Action Popups, Modals, Tooltips & Liquid Toasts
+   • Plus Jakarta Sans & SF Pro Display Optical Hierarchy
    • Strict WCAG AAA/AA Contrast Compliance (Both Themes)
-   • Responsive Fluid Breakpoints (iPhone, iPad, MacBook, Studio Display)
+   • Responsive Fluid Breakpoints (iPhone to Studio Display)
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   Design Tokens (Light Liquid Glass Theme)
+   Design Tokens (Authentic macOS Light Liquid Glass Theme)
+   Pure, Titanium-Silver Canvas — Zero Colorful Blob Slop
    -------------------------------------------------------------------------- */
 :root, [data-theme="light"] {
   --color-scheme: light;
@@ -20,71 +21,68 @@
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Monaco, Consolas, monospace;
 
-  /* Atmospheric Background Mesh (Light Crystalline) */
-  --bg-app: #f2f5fb;
-  --bg-mesh-1: radial-gradient(circle at 12% 14%, rgba(59, 130, 246, 0.15) 0%, transparent 45%);
-  --bg-mesh-2: radial-gradient(circle at 88% 18%, rgba(147, 51, 234, 0.12) 0%, transparent 42%);
-  --bg-mesh-3: radial-gradient(circle at 50% 92%, rgba(14, 165, 233, 0.12) 0%, transparent 48%);
-  --bg-mesh-4: radial-gradient(circle at 82% 82%, rgba(236, 72, 153, 0.08) 0%, transparent 40%);
+  /* Authentic Apple macOS System Canvas (Clean, Minimal, Pristine) */
+  --bg-app: #f5f5f7;
+  --bg-mesh: linear-gradient(180deg, #fafafc 0%, #f5f5f7 35%, #ededf2 100%);
 
-  /* Liquid Glass Surfaces (Light) */
-  --glass-bg: rgba(255, 255, 255, 0.74);
-  --glass-surface: rgba(255, 255, 255, 0.85);
-  --glass-surface-subtle: rgba(243, 247, 252, 0.65);
-  --glass-surface-raised: rgba(255, 255, 255, 0.94);
-  --glass-input-bg: rgba(255, 255, 255, 0.70);
-  --glass-input-focus: rgba(255, 255, 255, 0.98);
+  /* Liquid Glass Surfaces (macOS Frosted Glass Windows) */
+  --glass-bg: rgba(255, 255, 255, 0.84);
+  --glass-surface: rgba(255, 255, 255, 0.90);
+  --glass-surface-subtle: rgba(243, 245, 249, 0.70);
+  --glass-surface-raised: #ffffff;
+  --glass-input-bg: rgba(255, 255, 255, 0.88);
+  --glass-input-focus: #ffffff;
 
-  /* Specular Rims & Borders (Light) */
-  --glass-border: rgba(255, 255, 255, 0.90);
-  --glass-border-subtle: rgba(226, 232, 240, 0.80);
-  --border-subtle: #cbd5e1;
-  --border-strong: #94a3b8;
+  /* Specular Rims & Hairline Borders (Authentic Apple 1px Stroke) */
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-border-subtle: rgba(0, 0, 0, 0.05);
+  --border-subtle: rgba(0, 0, 0, 0.10);
+  --border-strong: rgba(0, 0, 0, 0.22);
   --border-focus: #0071e3;
 
-  /* Specular Light Refraction & Apple Shadows */
+  /* Real macOS Window Shadows & Highlights */
   --glass-shadow: 
-    0 24px 60px -12px rgba(15, 23, 42, 0.09),
-    0 12px 24px -6px rgba(15, 23, 42, 0.05),
-    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03);
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 10px 30px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
   --glass-shadow-sm: 
-    0 4px 16px rgba(15, 23, 42, 0.06),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 4px 12px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   --glass-shadow-hover: 
-    0 20px 45px -8px rgba(37, 99, 235, 0.16),
-    0 8px 18px -4px rgba(15, 23, 42, 0.06),
-    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1);
-  --shadow-input-focus: 0 0 0 4px rgba(0, 113, 227, 0.18), inset 0 1px 2px rgba(0, 0, 0, 0.04);
+    0 2px 6px rgba(0, 0, 0, 0.06),
+    0 14px 36px rgba(0, 113, 227, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  --shadow-input-focus: 0 0 0 3.5px rgba(0, 113, 227, 0.20), inset 0 1px 2px rgba(0, 0, 0, 0.03);
   --shadow-card: var(--glass-shadow);
-  --shadow-xl: 0 36px 90px rgba(15, 23, 42, 0.18);
+  --shadow-xl: 0 24px 65px rgba(0, 0, 0, 0.12);
 
-  /* Typography (Rigorous WCAG AAA Contrast against #ffffff & glass) */
-  --text-primary: #0b1120;     /* Contrast > 17:1 (AAA) */
-  --text-secondary: #1e293b;   /* Contrast > 11:1 (AAA) */
-  --text-tertiary: #475569;   /* Contrast > 6:1 (AAA) */
-  --text-muted: #64748b;       /* Contrast > 4.6:1 (AA) */
+  /* Typography (Apple Human Interface Guidelines Contrast) */
+  --text-primary: #1d1d1f;     /* Apple System Label Color */
+  --text-secondary: #424245;   /* Apple Secondary Label */
+  --text-tertiary: #6e6e73;   /* Apple Tertiary Label */
+  --text-muted: #86868b;       /* Apple Quaternary Label */
   --text-inverse: #ffffff;
 
-  /* Brand Accents & Liquid Gradients */
+  /* Brand Accents */
   --brand-primary: #0071e3;
   --brand-primary-hover: #0077ed;
   --brand-surface: rgba(0, 113, 227, 0.08);
-  --brand-border: rgba(0, 113, 227, 0.35);
+  --brand-border: rgba(0, 113, 227, 0.30);
   --brand-text: #0071e3;
-  --gradient-primary: linear-gradient(135deg, #0071e3 0%, #1d4ed8 50%, #4338ca 100%);
-  --gradient-gem: linear-gradient(135deg, #38bdf8 0%, #0071e3 45%, #6366f1 100%);
-  --gradient-hover: linear-gradient(135deg, #38bdf8 0%, #2563eb 50%, #4f46e5 100%);
+  --gradient-primary: linear-gradient(135deg, #0071e3 0%, #0077ed 100%);
+  --gradient-gem: linear-gradient(135deg, #2997ff 0%, #0071e3 100%);
+  --gradient-hover: linear-gradient(135deg, #0077ed 0%, #0062c4 100%);
 
   /* Badges */
-  --badge-bg: rgba(226, 232, 240, 0.75);
-  --badge-text: #0f172a;
-  --badge-accent-bg: rgba(219, 234, 254, 0.85);
-  --badge-accent-text: #1d4ed8;
+  --badge-bg: rgba(0, 0, 0, 0.05);
+  --badge-text: #1d1d1f;
+  --badge-accent-bg: rgba(0, 113, 227, 0.10);
+  --badge-accent-text: #0071e3;
 
-  /* Grain Texture Blending */
-  --grain-opacity: 0.034;
-  --grain-blend: multiply;
+  /* Grain Texture Blending in Light Mode */
+  --grain-opacity: 0;
+  --grain-blend: normal;
 
   /* Preview Canvas Background */
   --preview-canvas-bg: #E5E5E5;
@@ -92,16 +90,18 @@
 
 /* --------------------------------------------------------------------------
    Design Tokens (Dark Grain Gradient Theme — Apple visionOS / macOS Pro)
+   Deep Obsidian, Cosmic Sapphire Mesh & Tactile Analog Film Grain
    -------------------------------------------------------------------------- */
 [data-theme="dark"] {
   --color-scheme: dark;
 
   /* Atmospheric Background Mesh (Dark Cinematic Obsidian) */
   --bg-app: #06080e;
-  --bg-mesh-1: radial-gradient(circle at 14% 12%, rgba(37, 99, 235, 0.22) 0%, transparent 48%);
-  --bg-mesh-2: radial-gradient(circle at 86% 16%, rgba(99, 102, 241, 0.18) 0%, transparent 44%);
-  --bg-mesh-3: radial-gradient(circle at 50% 88%, rgba(147, 51, 234, 0.14) 0%, transparent 50%);
-  --bg-mesh-4: radial-gradient(circle at 82% 80%, rgba(14, 165, 233, 0.13) 0%, transparent 42%);
+  --bg-mesh: 
+    radial-gradient(circle at 14% 12%, rgba(37, 99, 235, 0.22) 0%, transparent 48%),
+    radial-gradient(circle at 86% 16%, rgba(99, 102, 241, 0.18) 0%, transparent 44%),
+    radial-gradient(circle at 50% 88%, rgba(147, 51, 234, 0.14) 0%, transparent 50%),
+    radial-gradient(circle at 82% 80%, rgba(14, 165, 233, 0.13) 0%, transparent 42%);
 
   /* Liquid Glass Surfaces (Dark Space Obsidian) */
   --glass-bg: rgba(13, 19, 32, 0.70);
@@ -185,8 +185,9 @@ html {
 body {
   font-family: var(--font-body);
   background-color: var(--bg-app);
-  background-image: var(--bg-mesh-1), var(--bg-mesh-2), var(--bg-mesh-3), var(--bg-mesh-4);
+  background-image: var(--bg-mesh);
   background-attachment: fixed;
+  background-size: cover;
   color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.5;
@@ -200,7 +201,6 @@ body {
 
 /* --------------------------------------------------------------------------
    Cinematic Dark Film Grain Texture Overlay
-   Resolution-independent procedural SVG fractal noise
    -------------------------------------------------------------------------- */
 .liquid-grain-overlay {
   position: fixed;
@@ -217,8 +217,18 @@ body {
   background-size: 180px 180px;
 }
 
+/* In Light Mode: Turn OFF the floating colored orbs completely */
+:root:not([data-theme="dark"]) .liquid-canvas,
+[data-theme="light"] .liquid-canvas {
+  display: none !important;
+}
+
+[data-theme="dark"] .liquid-canvas {
+  display: block !important;
+}
+
 /* --------------------------------------------------------------------------
-   Ambient Liquid Glowing Orbs (Chromatic Caustics)
+   Ambient Liquid Glowing Orbs (Dark Mode Only)
    -------------------------------------------------------------------------- */
 .liquid-canvas {
   position: fixed;
@@ -244,7 +254,7 @@ body {
   height: 620px;
   top: -150px;
   left: -120px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.50) 0%, rgba(99, 102, 241, 0.25) 55%, transparent 75%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.42) 0%, rgba(99, 102, 241, 0.20) 55%, transparent 75%);
   animation: floatOrb1 22s ease-in-out infinite alternate;
 }
 
@@ -253,7 +263,7 @@ body {
   height: 540px;
   bottom: -120px;
   right: -90px;
-  background: radial-gradient(circle, rgba(147, 51, 234, 0.40) 0%, rgba(236, 72, 153, 0.20) 55%, transparent 75%);
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.32) 0%, rgba(236, 72, 153, 0.14) 55%, transparent 75%);
   animation: floatOrb2 26s ease-in-out infinite alternate;
 }
 
@@ -262,7 +272,7 @@ body {
   height: 440px;
   top: 38%;
   left: 54%;
-  background: radial-gradient(circle, rgba(14, 165, 233, 0.35) 0%, rgba(59, 130, 246, 0.12) 60%, transparent 75%);
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.28) 0%, transparent 70%);
   animation: floatOrb3 18s ease-in-out infinite alternate;
 }
 
@@ -271,21 +281,8 @@ body {
   height: 400px;
   top: 65%;
   left: -80px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.30) 0%, rgba(147, 51, 234, 0.10) 60%, transparent 80%);
-  animation: floatOrb4 24s ease-in-out infinite alternate;
-}
-
-[data-theme="dark"] .orb-1 {
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.42) 0%, rgba(99, 102, 241, 0.20) 55%, transparent 75%);
-}
-[data-theme="dark"] .orb-2 {
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.32) 0%, rgba(236, 72, 153, 0.14) 55%, transparent 75%);
-}
-[data-theme="dark"] .orb-3 {
-  background: radial-gradient(circle, rgba(14, 165, 233, 0.28) 0%, transparent 70%);
-}
-[data-theme="dark"] .orb-4 {
   background: radial-gradient(circle, rgba(79, 70, 229, 0.26) 0%, transparent 75%);
+  animation: floatOrb4 24s ease-in-out infinite alternate;
 }
 
 @keyframes floatOrb1 {
@@ -356,7 +353,7 @@ body {
   flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.45);
   box-shadow: 
-    0 10px 28px -4px rgba(37, 99, 235, 0.45),
+    0 10px 28px -4px rgba(0, 113, 227, 0.45),
     inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.75),
     inset 0 -1.5px 1.5px 0 rgba(0, 0, 0, 0.25);
   position: relative;
@@ -367,7 +364,7 @@ body {
 .brand-logo:hover {
   transform: translateY(-1px) scale(1.03);
   box-shadow: 
-    0 14px 34px -4px rgba(37, 99, 235, 0.55),
+    0 14px 34px -4px rgba(0, 113, 227, 0.55),
     inset 0 2px 2px 0 rgba(255, 255, 255, 0.9);
 }
 
@@ -460,8 +457,8 @@ body {
    -------------------------------------------------------------------------- */
 .card {
   background: var(--glass-bg);
-  backdrop-filter: blur(32px) saturate(210%) brightness(105%);
-  -webkit-backdrop-filter: blur(32px) saturate(210%) brightness(105%);
+  backdrop-filter: blur(30px) saturate(200%) brightness(102%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%) brightness(102%);
   border: 1px solid var(--glass-border);
   border-radius: 24px;
   padding: 30px;
@@ -609,7 +606,7 @@ body {
 }
 
 .options-header:hover {
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.03);
   color: var(--text-primary);
 }
 
@@ -707,7 +704,7 @@ body {
   gap: 10px;
   cursor: pointer;
   box-shadow: 
-    0 10px 28px -4px rgba(0, 113, 227, 0.45),
+    0 10px 28px -4px rgba(0, 113, 227, 0.40),
     inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.65),
     inset 0 -1.5px 1.5px 0 rgba(0, 0, 0, 0.2);
   transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background 0.2s ease;
@@ -729,14 +726,14 @@ body {
   background: var(--gradient-hover);
   transform: translateY(-2px);
   box-shadow: 
-    0 16px 36px -4px rgba(0, 113, 227, 0.55),
+    0 16px 36px -4px rgba(0, 113, 227, 0.50),
     inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.85);
 }
 
 .generate-btn:active:not(:disabled) {
   transform: scale(0.985);
   box-shadow: 
-    0 6px 18px -2px rgba(0, 113, 227, 0.4),
+    0 6px 18px -2px rgba(0, 113, 227, 0.35),
     inset 0 1px 1px 0 rgba(0, 0, 0, 0.2);
 }
 
@@ -770,7 +767,7 @@ body {
   width: 15%;
   background: var(--gradient-primary);
   border-radius: 999px;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 12px rgba(0, 113, 227, 0.5);
   transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -818,7 +815,7 @@ body {
   border-color: var(--brand-primary);
   color: var(--brand-text);
   background: var(--brand-surface);
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+  box-shadow: 0 0 12px rgba(0, 113, 227, 0.25);
 }
 
 .step-pill.done {
@@ -902,7 +899,7 @@ body {
   padding: 4px;
   border-radius: 12px;
   border: 1px solid var(--glass-border-subtle);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .tab-btn {
@@ -936,7 +933,7 @@ body {
   overflow: hidden;
   margin-bottom: 24px;
   background: var(--preview-canvas-bg);
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .preview-stage.transparent-bg,
@@ -963,7 +960,7 @@ body {
   max-height: 620px;
   object-fit: contain;
   border-radius: 6px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.16);
   transition: transform 0.25s ease;
 }
 
@@ -987,7 +984,7 @@ body {
   border-radius: 8px;
   text-decoration: none;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1076,7 +1073,7 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   Recent Project Showcases (Search & Pagination)
+   Recent Project Showcases (Search, Pagination & Complete CRUD)
    -------------------------------------------------------------------------- */
 .history-header {
   display: flex;
@@ -1089,8 +1086,9 @@ body {
 
 .history-title-block {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .history-title-block h3 {
@@ -1105,6 +1103,51 @@ body {
   font-size: 12.5px;
   font-weight: 600;
   color: var(--text-muted);
+}
+
+.btn-new-showcase {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 13px;
+  border-radius: 999px;
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-border);
+  color: var(--brand-text);
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.btn-new-showcase:hover {
+  background: var(--brand-primary);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 113, 227, 0.28);
+}
+
+.input-pulse-highlight {
+  animation: appleInputPulse 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes appleInputPulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 113, 227, 0.65); }
+  50% { box-shadow: 0 0 0 8px rgba(0, 113, 227, 0.35); }
+  100% { box-shadow: var(--shadow-input-focus); }
+}
+
+.empty-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: var(--preview-canvas-bg);
 }
 
 .history-search-wrapper {
@@ -1143,7 +1186,7 @@ body {
   font-size: 13px;
   font-weight: 500;
   outline: none;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1172,8 +1215,8 @@ body {
 /* History Grid */
 .history-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 22px;
   margin-bottom: 24px;
 }
 
@@ -1191,6 +1234,7 @@ body {
   border: 1px dashed var(--border-subtle);
 }
 
+/* History Card Item (Apple Glass Tile with Floating Action Menu) */
 .history-card-item {
   background: var(--glass-surface);
   backdrop-filter: blur(20px);
@@ -1203,6 +1247,7 @@ body {
   display: flex;
   flex-direction: column;
   box-shadow: var(--glass-shadow-sm);
+  position: relative;
 }
 
 .history-card-item:hover {
@@ -1213,7 +1258,7 @@ body {
 
 .history-thumb {
   width: 100%;
-  height: 170px;
+  height: 175px;
   background: var(--preview-canvas-bg);
   display: flex;
   align-items: center;
@@ -1231,6 +1276,65 @@ body {
 
 .history-card-item:hover .history-thumb img {
   transform: scale(1.03);
+}
+
+/* Floating Action Menu Bar on Card */
+.card-actions-bar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 5;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.history-card-item:hover .card-actions-bar,
+.history-card-item:focus-within .card-actions-bar {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (hover: none) {
+  .card-actions-bar {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.card-action-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.card-action-btn:hover {
+  transform: scale(1.1);
+  background: var(--brand-primary);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.card-action-btn.btn-delete:hover {
+  background: #ef4444;
+}
+
+.card-action-btn svg {
+  width: 14px;
+  height: 14px;
 }
 
 .history-meta {
@@ -1541,7 +1645,7 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   User Management Modal (Apple Sheet UI)
+   User Management & Action Modals (Apple Sheet UI)
    -------------------------------------------------------------------------- */
 .modal-overlay {
   position: fixed;
@@ -1570,6 +1674,101 @@ body {
   box-shadow: var(--shadow-xl);
   overflow: hidden;
   animation: appleModalIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-container.apple-sheet {
+  max-width: 640px;
+}
+
+/* Apple Confirmation Alert Dialog */
+.modal-container.apple-alert-sheet {
+  max-width: 440px;
+  padding: 32px 28px 26px;
+  text-align: center;
+  border-radius: 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.alert-dialog-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 20px;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #f59e0b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
+}
+
+.alert-dialog-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.alert-dialog-text {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.alert-dialog-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.alert-dialog-actions button {
+  flex: 1;
+}
+
+.modal-cancel-btn {
+  background: var(--glass-surface-subtle);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 12px 20px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-cancel-btn:hover {
+  background: var(--glass-surface);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.modal-destructive-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 700;
+  padding: 12px 20px;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-destructive-btn:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(220, 38, 38, 0.45);
 }
 
 @keyframes appleModalIn {
@@ -1620,8 +1819,12 @@ body {
 }
 
 .modal-close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.06);
   color: var(--text-primary);
+}
+
+[data-theme="dark"] .modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .modal-tabs {
@@ -1700,7 +1903,7 @@ body {
 }
 
 .users-table tr:hover td {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 [data-theme="dark"] .users-table tr:hover td {
@@ -1769,6 +1972,7 @@ body {
 .modal-form-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 12px;
   margin-top: 24px;
 }
 
@@ -1837,6 +2041,125 @@ body {
 
 .hidden {
   display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Apple Floating Liquid Glass Toast Notifications
+   -------------------------------------------------------------------------- */
+.toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .toast-container {
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    align-items: center;
+  }
+}
+
+.apple-toast {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="dark"] .apple-toast {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.18);
+}
+
+.apple-toast.toast-hiding {
+  opacity: 0;
+  transform: translateY(-12px) scale(0.95);
+}
+
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateY(-16px) scale(0.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.toast-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toast-success .toast-icon {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.toast-error .toast-icon {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.toast-info .toast-icon {
+  background: rgba(0, 113, 227, 0.2);
+  color: #0071e3;
+}
+
+/* --------------------------------------------------------------------------
+   Apple Floating Glass Tooltips
+   -------------------------------------------------------------------------- */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* --------------------------------------------------------------------------

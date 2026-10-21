@@ -106,11 +106,251 @@ document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById('logout-btn');
   const viewerNotice = document.getElementById('viewer-notice-banner');
 
+  // Edit Showcase Modal Elements
+  const editShowcaseModal = document.getElementById('edit-showcase-modal');
+  const editShowcaseForm = document.getElementById('edit-showcase-form');
+  const editSlugInput = document.getElementById('edit-showcase-slug');
+  const editTitleInput = document.getElementById('edit-showcase-title');
+  const editUrlInput = document.getElementById('edit-showcase-url');
+  const editCategoryInput = document.getElementById('edit-showcase-category');
+  const editTypeInput = document.getElementById('edit-showcase-type');
+  const closeEditModalBtn = document.getElementById('close-edit-modal-btn');
+  const cancelEditBtn = document.getElementById('cancel-edit-btn');
+  const saveEditBtn = document.getElementById('save-edit-btn');
+
+  // Delete Confirmation Alert Elements
+  const confirmDeleteModal = document.getElementById('confirm-delete-modal');
+  const deleteProjectName = document.getElementById('delete-project-name');
+  const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+  const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+  let showcaseToDelete = null;
+
+  // Toast Container & Quick New Button
+  const toastContainer = document.getElementById('toast-container');
+  const quickNewShowcaseBtn = document.getElementById('btn-quick-new-showcase');
+
   let currentResultData = null;
   let allHistory = [];
   let filteredHistory = [];
   let currentPage = 1;
   const ITEMS_PER_PAGE = 8;
+
+  // --------------------------------------------------------------------------
+  // Floating Liquid Glass Toast Notification System
+  // --------------------------------------------------------------------------
+  function showToast(message, type = 'info', duration = 3200) {
+    if (!toastContainer) return;
+    const toast = document.createElement('div');
+    toast.className = `apple-toast toast-${type}`;
+
+    let iconSvg = '';
+    if (type === 'success') {
+      iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+    } else if (type === 'error') {
+      iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+    } else {
+      iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+    }
+
+    toast.innerHTML = `
+      <span class="toast-icon">${iconSvg}</span>
+      <span class="toast-text">${escapeHtml(message)}</span>
+    `;
+
+    toastContainer.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('toast-hiding');
+      toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+      setTimeout(() => toast.remove(), 400);
+    }, duration);
+  }
+
+  // --------------------------------------------------------------------------
+  // Edit Showcase Modal Logic (Apple Sheet)
+  // --------------------------------------------------------------------------
+  function openEditModal(item) {
+    if (!editShowcaseModal || !item) return;
+    if (editSlugInput) editSlugInput.value = item.slug || '';
+    if (editTitleInput) editTitleInput.value = item.title || '';
+    if (editUrlInput) editUrlInput.value = item.url || '';
+    if (editCategoryInput) editCategoryInput.value = item.category || '';
+    if (editTypeInput) editTypeInput.value = item.type || '';
+    editShowcaseModal.classList.remove('hidden');
+    if (editTitleInput) editTitleInput.focus();
+  }
+
+  function closeEditModal() {
+    if (editShowcaseModal) editShowcaseModal.classList.add('hidden');
+  }
+
+  if (closeEditModalBtn) closeEditModalBtn.addEventListener('click', closeEditModal);
+  if (cancelEditBtn) cancelEditBtn.addEventListener('click', closeEditModal);
+  if (editShowcaseModal) {
+    editShowcaseModal.addEventListener('click', (e) => {
+      if (e.target === editShowcaseModal) closeEditModal();
+    });
+  }
+
+  if (editShowcaseForm) {
+    editShowcaseForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const slug = editSlugInput ? editSlugInput.value : '';
+      if (!slug) return;
+
+      const payload = {
+        title: editTitleInput.value.trim(),
+        url: editUrlInput.value.trim(),
+        category: editCategoryInput.value.trim(),
+        type: editTypeInput.value.trim()
+      };
+
+      if (saveEditBtn) {
+        saveEditBtn.disabled = true;
+        saveEditBtn.textContent = 'Saving...';
+      }
+
+      try {
+        const res = await fetch(`/api/history/${encodeURIComponent(slug)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.detail || 'Could not update showcase.', 'error');
+          return;
+        }
+
+        const updated = data.showcase;
+        const idx = allHistory.findIndex(h => h.slug === slug);
+        if (idx !== -1) {
+          allHistory[idx] = { ...allHistory[idx], ...updated };
+        }
+        const fIdx = filteredHistory.findIndex(h => h.slug === slug);
+        if (fIdx !== -1) {
+          filteredHistory[fIdx] = { ...filteredHistory[fIdx], ...updated };
+        }
+
+        if (currentResultData && currentResultData.slug === slug) {
+          currentResultData = { ...currentResultData, ...updated };
+          if (resultTitle) resultTitle.textContent = updated.title || slug;
+          if (resultUrl) {
+            resultUrl.textContent = updated.url || '';
+            resultUrl.href = updated.url || '#';
+          }
+        }
+
+        closeEditModal();
+        renderHistory();
+        showToast(`Showcase "${updated.title}" updated successfully`, 'success');
+      } catch (err) {
+        showToast(err.message || 'Error updating showcase', 'error');
+      } finally {
+        if (saveEditBtn) {
+          saveEditBtn.disabled = false;
+          saveEditBtn.textContent = 'Save Changes';
+        }
+      }
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // Delete Showcase Alert Sheet (Apple HIG Destructive Confirmation)
+  // --------------------------------------------------------------------------
+  function openDeleteModal(item) {
+    if (!confirmDeleteModal || !item) return;
+    showcaseToDelete = item;
+    if (deleteProjectName) {
+      deleteProjectName.textContent = `"${item.title || item.slug}"`;
+    }
+    confirmDeleteModal.classList.remove('hidden');
+  }
+
+  function closeDeleteModal() {
+    if (confirmDeleteModal) confirmDeleteModal.classList.add('hidden');
+    showcaseToDelete = null;
+  }
+
+  if (cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+  if (confirmDeleteModal) {
+    confirmDeleteModal.addEventListener('click', (e) => {
+      if (e.target === confirmDeleteModal) closeDeleteModal();
+    });
+  }
+
+  if (confirmDeleteBtn) {
+    confirmDeleteBtn.addEventListener('click', async () => {
+      if (!showcaseToDelete) return;
+      const slug = showcaseToDelete.slug;
+      const title = showcaseToDelete.title || slug;
+      const originalText = confirmDeleteBtn.textContent;
+      confirmDeleteBtn.disabled = true;
+      confirmDeleteBtn.textContent = 'Deleting...';
+
+      try {
+        const res = await fetch(`/api/history/${encodeURIComponent(slug)}`, {
+          method: 'DELETE'
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.detail || 'Could not delete showcase', 'error');
+          return;
+        }
+
+        allHistory = allHistory.filter(h => h.slug !== slug);
+        filteredHistory = filteredHistory.filter(h => h.slug !== slug);
+
+        closeDeleteModal();
+        renderHistory();
+        showToast(`Showcase "${title}" deleted`, 'success');
+
+        if (currentResultData && currentResultData.slug === slug) {
+          if (allHistory.length > 0) {
+            displayResult(allHistory[0]);
+          } else if (resultsCard) {
+            resultsCard.classList.add('hidden');
+            currentResultData = null;
+          }
+        }
+      } catch (err) {
+        showToast(err.message || 'Error deleting showcase', 'error');
+      } finally {
+        confirmDeleteBtn.disabled = false;
+        confirmDeleteBtn.textContent = originalText;
+      }
+    });
+  }
+
+  // Quick New Showcase Button (Smooth scroll to generator form with focus pulse)
+  if (quickNewShowcaseBtn) {
+    quickNewShowcaseBtn.addEventListener('click', () => {
+      if (currentUser && currentUser.role === 'viewer') {
+        showToast('Viewers cannot create showcases. Creator role required.', 'error');
+        return;
+      }
+      const genCard = document.querySelector('.generator-card') || form;
+      if (genCard) {
+        genCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      if (urlInput) {
+        setTimeout(() => {
+          urlInput.focus();
+          urlInput.classList.add('input-pulse-highlight');
+          setTimeout(() => urlInput.classList.remove('input-pulse-highlight'), 1200);
+        }, 300);
+      }
+    });
+  }
+
+  // Universal Escape Key Handler for All Sheets & Modals
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (userModal && !userModal.classList.contains('hidden')) userModal.classList.add('hidden');
+      if (editShowcaseModal && !editShowcaseModal.classList.contains('hidden')) closeEditModal();
+      if (confirmDeleteModal && !confirmDeleteModal.classList.contains('hidden')) closeDeleteModal();
+    }
+  });
 
   // --------------------------------------------------------------------------
   // Authentication & RBAC Check
@@ -164,6 +404,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnText) btnText.textContent = 'Viewing Mode (Disabled)';
       }
     }
+
+    // Re-render gallery cards with current user RBAC permissions (showing/hiding edit/delete actions)
+    renderHistory();
   }
 
   // Logout Handler
@@ -258,12 +501,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const delRes = await fetch(`/api/users/${encodeURIComponent(targetUser)}`, { method: 'DELETE' });
             const data = await delRes.json();
             if (!delRes.ok || !data.success) {
-              alert(data.detail || 'Could not delete user.');
+              showToast(data.detail || 'Could not delete user.', 'error');
               return;
             }
             loadUsersList();
+            showToast(`User '${targetUser}' deleted successfully`, 'success');
           } catch (err) {
-            alert('Network error while deleting user.');
+            showToast('Network error while deleting user.', 'error');
           }
         });
       });
@@ -332,7 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
 
       if (currentUser && currentUser.role === 'viewer') {
-        alert("Viewers cannot generate showcases. Please contact an administrator or creator.");
+        showToast("Viewers cannot generate showcases. Please contact an administrator or creator.", "error");
         return;
       }
 
@@ -403,11 +647,12 @@ document.addEventListener('DOMContentLoaded', () => {
           if (progressContainer) progressContainer.classList.add('hidden');
           displayResult(data);
           loadHistory();
+          showToast(`Showcase "${data.title || 'Project'}" created successfully!`, 'success');
         }, 500);
 
       } catch (err) {
         clearInterval(stepInterval);
-        alert(`Generation Failed: ${err.message}`);
+        showToast(`Generation Failed: ${err.message}`, 'error');
         if (progressContainer) progressContainer.classList.add('hidden');
       } finally {
         generateBtn.disabled = false;
@@ -597,11 +842,54 @@ document.addEventListener('DOMContentLoaded', () => {
     const endIdx = Math.min(startIdx + ITEMS_PER_PAGE, totalItems);
     const pageItems = filteredHistory.slice(startIdx, endIdx);
 
-    // Render cards
-    historyGrid.innerHTML = pageItems.map(item => `
+    const canModify = currentUser && (currentUser.role === 'admin' || currentUser.role === 'creator');
+
+    // Render cards with Apple Liquid Glass Action Menus & Tooltips
+    historyGrid.innerHTML = pageItems.map(item => {
+      const thumbUrl = (item.exports && (item.exports.showcase_webp || item.exports.showcase_png)) || '';
+      return `
       <div class="history-card-item" data-slug="${escapeHtml(item.slug)}">
         <div class="history-thumb">
-          <img src="${item.exports.showcase_webp || item.exports.showcase_png}" alt="${escapeHtml(item.title)}" loading="lazy" />
+          ${thumbUrl 
+            ? `<img src="${thumbUrl}" alt="${escapeHtml(item.title)}" loading="lazy" />` 
+            : `<div class="empty-thumb-placeholder">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="36" height="36" style="opacity:0.35">
+                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                   <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                   <polyline points="21 15 16 10 5 21"></polyline>
+                 </svg>
+               </div>`
+          }
+          <div class="card-actions-bar" onclick="event.stopPropagation()">
+            <button type="button" class="card-action-btn btn-preview" data-slug="${escapeHtml(item.slug)}" data-tooltip="Preview in Studio" aria-label="Preview in Studio">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+            <button type="button" class="card-action-btn btn-copy-url" data-url="${escapeHtml(item.url)}" data-tooltip="Copy URL" aria-label="Copy Website URL">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+              </svg>
+            </button>
+            ${canModify ? `
+              <button type="button" class="card-action-btn btn-edit" data-slug="${escapeHtml(item.slug)}" data-tooltip="Edit Details" aria-label="Edit Showcase Details">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+              <button type="button" class="card-action-btn btn-delete" data-slug="${escapeHtml(item.slug)}" data-tooltip="Delete Showcase" aria-label="Delete Showcase">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </button>
+            ` : ''}
+          </div>
         </div>
         <div class="history-meta">
           <div class="history-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</div>
@@ -614,16 +902,77 @@ document.addEventListener('DOMContentLoaded', () => {
           ` : ''}
         </div>
       </div>
-    `).join('');
+      `;
+    }).join('');
 
-    // Attach click events
+    // Attach click events on card body -> preview
     historyGrid.querySelectorAll('.history-card-item').forEach(el => {
       el.addEventListener('click', () => {
         const slug = el.dataset.slug;
         const found = allHistory.find(h => h.slug === slug);
         if (found) {
           displayResult(found);
+          if (resultsCard) {
+            resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
         }
+      });
+    });
+
+    // Preview button
+    historyGrid.querySelectorAll('.btn-preview').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const slug = btn.dataset.slug;
+        const found = allHistory.find(h => h.slug === slug);
+        if (found) {
+          displayResult(found);
+          if (resultsCard) {
+            resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+          showToast(`Viewing "${found.title || slug}"`, 'info');
+        }
+      });
+    });
+
+    // Copy URL button
+    historyGrid.querySelectorAll('.btn-copy-url').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const url = btn.dataset.url;
+        if (!url) return;
+        try {
+          await navigator.clipboard.writeText(url);
+          showToast('Link copied to clipboard', 'success');
+        } catch (err) {
+          const ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+          showToast('Link copied to clipboard', 'success');
+        }
+      });
+    });
+
+    // Edit button (Sheet Modal)
+    historyGrid.querySelectorAll('.btn-edit').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const slug = btn.dataset.slug;
+        const found = allHistory.find(h => h.slug === slug);
+        if (found) openEditModal(found);
+      });
+    });
+
+    // Delete button (Confirmation Dialog)
+    historyGrid.querySelectorAll('.btn-delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const slug = btn.dataset.slug;
+        const found = allHistory.find(h => h.slug === slug);
+        if (found) openDeleteModal(found);
       });
     });
 
