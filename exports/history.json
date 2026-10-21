@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "title": "EQuipMaterials",
+    "slug": "equipmaterials",
+    "url": "https://equipmaterials.com/",
+    "mobile_finish": "deep-blue",
+    "exports": {
+      "showcase_png": "/exports/equipmaterialscom/equipmaterials.png",
+      "showcase_webp": "/exports/equipmaterialscom/equipmaterials.webp",
+      "showcase_jpg": "/exports/equipmaterialscom/equipmaterials.jpg",
+      "mobile_png": "/exports/equipmaterialscom/equipmaterials-mobile-iphone17promax.png",
+      "mobile_webp": "/exports/equipmaterialscom/equipmaterials-mobile-iphone17promax.webp",
+      "mobile_jpg": "/exports/equipmaterialscom/equipmaterials-mobile-iphone17promax.jpg",
+      "tablet_png": "/exports/equipmaterialscom/equipmaterials-tablet-ipad.png",
+      "tablet_webp": "/exports/equipmaterialscom/equipmaterials-tablet-ipad.webp",
+      "tablet_jpg": "/exports/equipmaterialscom/equipmaterials-tablet-ipad.jpg",
+      "desktop_png": "/exports/equipmaterialscom/equipmaterials-desktop.png",
+      "desktop_webp": "/exports/equipmaterialscom/equipmaterials-desktop.webp",
+      "desktop_jpg": "/exports/equipmaterialscom/equipmaterials-desktop.jpg",
+      "zip": "/exports/equipmaterialscom/equipmaterials-all-assets.zip"
+    },
+    "created_at": null
+  }
+]

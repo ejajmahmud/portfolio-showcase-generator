@@ -16,7 +16,7 @@ def generate_portfolio_assets(
     project_name=None,
     mobile_finish="deep-blue",
     tablet_finish="space-black",
-    bg_color=(255, 255, 255, 255),
+    bg_color="#E5E5E5",
     shadow_intensity="normal",
     delay=2.0,
     hide_banners=True,
@@ -79,7 +79,7 @@ def generate_portfolio_assets(
         desktop_img=raw_desk,
         output_dir=output_dir,
         base_name=slug,
-        bg_for_jpg=(255, 255, 255)
+        bg_for_jpg=(229, 229, 229)
     )
     
     if progress_callback:

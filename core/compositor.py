@@ -3,9 +3,11 @@ from PIL import Image, ImageDraw, ImageFilter
 
 def parse_color(color_input):
     """
-    Parses hex string ('#ffffff', 'transparent') or tuple/list into RGBA tuple.
+    Parses hex string ('#E5E5E5', 'transparent') or tuple/list into RGBA tuple.
     """
-    if color_input is None or color_input == 'transparent':
+    if color_input is None:
+        return (229, 229, 229, 255)
+    if str(color_input).lower() == 'transparent':
         return (0, 0, 0, 0)
     if isinstance(color_input, (tuple, list)):
         if len(color_input) == 3:
@@ -26,7 +28,7 @@ def parse_color(color_input):
             b = int(c[4:6], 16)
             a = int(c[6:8], 16)
             return (r, g, b, a)
-    return (255, 255, 255, 255)
+    return (229, 229, 229, 255)
 
 def create_drop_shadow(image, offset=(0, 22), blur_radius=34, shadow_color=(0, 0, 0, 90)):
     """
@@ -64,7 +66,7 @@ def compose_showcase(
     framed_tablet_img,
     canvas_w=2000,
     canvas_h=2400,
-    bg_color=(255, 255, 255, 255),
+    bg_color=(229, 229, 229, 255),
     shadow_intensity="normal"
 ):
     """

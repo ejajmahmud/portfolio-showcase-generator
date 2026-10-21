@@ -43,7 +43,7 @@ class GenerateRequest(BaseModel):
     name: Optional[str] = None
     mobile_finish: Optional[str] = "deep-blue"
     tablet_finish: Optional[str] = "space-black"
-    bg_color: Optional[str] = "#ffffff"
+    bg_color: Optional[str] = "#E5E5E5"
     shadow_intensity: Optional[str] = "normal"
     delay: Optional[float] = 2.0
     hide_banners: Optional[bool] = True
@@ -93,7 +93,7 @@ async def generate_showcase(req: GenerateRequest):
             project_name=req.name,
             mobile_finish=req.mobile_finish or "deep-blue",
             tablet_finish=req.tablet_finish or "space-black",
-            bg_color=req.bg_color or "#ffffff",
+            bg_color=req.bg_color or "#E5E5E5",
             shadow_intensity=req.shadow_intensity or "normal",
             delay=req.delay if req.delay is not None else 2.0,
             hide_banners=req.hide_banners if req.hide_banners is not None else True,

@@ -2,7 +2,7 @@ import os
 import zipfile
 from PIL import Image
 
-def export_image(pil_image, output_path, format_type='png', quality=95, bg_for_jpg=(255, 255, 255)):
+def export_image(pil_image, output_path, format_type='png', quality=95, bg_for_jpg=(229, 229, 229)):
     """
     Exports PIL Image to PNG, WebP, or JPG with proper channel handling.
     """
@@ -33,7 +33,7 @@ def export_all_formats(
     desktop_img,
     output_dir,
     base_name="showcase",
-    bg_for_jpg=(255, 255, 255)
+    bg_for_jpg=(229, 229, 229)
 ):
     """
     Exports WebP, PNG, JPG for the showcase AND individual devices,

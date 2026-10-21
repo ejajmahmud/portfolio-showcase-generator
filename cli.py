@@ -13,8 +13,8 @@ def main():
                         help="iPhone 17 Pro Max finish (default: deep-blue)")
     parser.add_argument("--tablet", "-t", default="space-black", choices=["space-black", "silver"],
                         help="iPad finish (default: space-black)")
-    parser.add_argument("--bg", default="#ffffff",
-                        help="Background color ('#ffffff', 'transparent', or hex code)")
+    parser.add_argument("--bg", default="#E5E5E5",
+                        help="Background color ('#E5E5E5', 'transparent', or hex code)")
     parser.add_argument("--shadow", default="normal", choices=["subtle", "normal", "bold"],
                         help="Shadow intensity")
     parser.add_argument("--delay", type=float, default=1.5,
