@@ -36,6 +36,11 @@ async def health_check():
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 app.mount("/exports", StaticFiles(directory=EXPORTS_DIR), name="exports")
 
+# ACME Challenge for automated SSL certificate issuance
+ACME_DIR = os.environ.get("ACME_DIR", os.path.join(BASE_DIR, "acme-challenge"))
+os.makedirs(ACME_DIR, exist_ok=True)
+app.mount("/.well-known/acme-challenge", StaticFiles(directory=ACME_DIR), name="acme-challenge")
+
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 class GenerateRequest(BaseModel):
