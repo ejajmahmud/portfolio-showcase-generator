@@ -214,6 +214,20 @@ def save_history(entry):
         json.dump(history, f, indent=2)
 
 # --- Frontend Routes ---
+@app.get("/guide", response_class=HTMLResponse)
+async def guide_page(request: Request):
+    try:
+        return templates.TemplateResponse(request=request, name="guide_viewer.html")
+    except TypeError:
+        return templates.TemplateResponse("guide_viewer.html", {"request": request})
+
+@app.get("/docs/user-guide")
+async def user_guide_pdf():
+    pdf_path = os.path.join(BASE_DIR, "static", "docs", "Portfolio_Showcase_Studio_Guest_User_Guide.pdf")
+    if os.path.exists(pdf_path):
+        return FileResponse(pdf_path, media_type="application/pdf", filename="Portfolio_Showcase_Studio_Guest_User_Guide.pdf")
+    return RedirectResponse(url="/guide")
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     user = get_current_user_from_request(request)

@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const drawerThemeStatus = document.getElementById('drawer-theme-status');
     const drawerThemeBadge = document.getElementById('drawer-theme-badge');
     if (drawerThemeStatus) {
-      drawerThemeStatus.textContent = theme === 'dark' ? 'Obsidian Mesh (Dark)' : 'Mac Luminous (Light)';
+      drawerThemeStatus.textContent = theme === 'dark' ? 'Dark Appearance' : 'Light Appearance';
     }
     if (drawerThemeBadge) {
       drawerThemeBadge.textContent = theme === 'dark' ? 'Dark' : 'Light';

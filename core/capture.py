@@ -22,7 +22,7 @@ CLEANUP_CSS = """
 ::-webkit-scrollbar { display: none !important; }
 * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
 
-/* Hide common cookie consent & popups */
+/* Hide common cookie consent, intro/splash overlays, Elementor popups & gates */
 #onetrust-consent-sdk,
 #CybotCookiebotDialog,
 .cookie-banner,
@@ -36,12 +36,188 @@ CLEANUP_CSS = """
 [class*="cookie-banner" i],
 [class*="cookie-notice" i],
 [class*="cookie-consent" i],
-[class*="consent-modal" i] {
+[class*="consent-modal" i],
+.elementor-popup-modal,
+.dialog-lightbox-widget,
+.dialog-widget-content,
+[id*="elementor-popup-modal" i],
+[class*="elementor-popup-modal" i],
+.splash-screen,
+.splash-overlay,
+#splash-screen,
+#splash,
+.intro-modal,
+.intro-overlay,
+.gate-overlay,
+[class*="preloader" i],
+[id*="preloader" i] {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
+    pointer-events: none !important;
 }
 """
+
+def dismiss_popups_and_dialogs(page):
+    """
+    Intelligently detects and clicks 'Accept Cookies', 'Enter Site',
+    'Agree & Continue', 'Allow All', and modal dismissal buttons.
+    Also handles body scroll unlocking and backdrop removal.
+    """
+    # 1. Native keyboard escape (dismisses standard dialogs/popovers)
+    try:
+        page.keyboard.press("Escape")
+    except Exception:
+        pass
+
+    # 2. Comprehensive automated button clicker via in-page JavaScript
+    dismiss_script = """() => {
+        let clicked = false;
+
+        const triggerClick = (el) => {
+            try {
+                const evt = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+                el.dispatchEvent(evt);
+                el.click();
+                return true;
+            } catch (e) {
+                try { el.click(); return true; } catch (e2) { return false; }
+            }
+        };
+
+        // Priority 1: Specific high-confidence selectors (CMP cookies & Elementor/Splash gates)
+        const specificSelectors = [
+            '#onetrust-accept-btn-handler',
+            '#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll',
+            '#CybotCookiebotDialogBodyButtonAccept',
+            '#accept-cookie',
+            '#accept-cookies',
+            '#btn-accept-cookies',
+            '#cookie-accept',
+            '.agree-button',
+            '.cookie-accept',
+            '.js-cookie-accept',
+            '[data-cky-tag="accept-button"]',
+            '[data-cookiefirst-action="accept"]',
+            '.elementor-popup-modal a.elementor-button',
+            'a[href*="popup%3Aclose"]',
+            'a[href*="popup:close"]',
+            '.dialog-close-button',
+            '.dialog-lightbox-close-button',
+            '[aria-label="Accept all cookies" i]',
+            '[aria-label="Accept cookies" i]',
+            '[aria-label="Close" i]',
+            '[aria-label="Close dialog" i]',
+            '[aria-label="Dismiss" i]'
+        ];
+
+        for (const sel of specificSelectors) {
+            try {
+                const el = document.querySelector(sel);
+                if (el && el.offsetParent !== null && !el.disabled) {
+                    if (triggerClick(el)) {
+                        clicked = true;
+                        break;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        if (clicked) return { clicked: true, method: 'specificSelector' };
+
+        // Priority 2: Text matching on clickable elements
+        const candidates = Array.from(document.querySelectorAll('button, a, [role="button"], input[type="button"], input[type="submit"]'));
+        const highPriorityPhrases = [
+            'accept all cookies',
+            'accept all',
+            'accept cookies',
+            'agree & continue',
+            'agree and continue',
+            'i agree',
+            'allow all',
+            'allow all cookies',
+            'enter site',
+            'enter here',
+            'continue to site',
+            'explore site',
+            'enter',
+            'got it',
+            'i understand',
+            'accept',
+            'agree'
+        ];
+
+        for (const candidate of candidates) {
+            try {
+                if (candidate.offsetParent === null) continue;
+                const rect = candidate.getBoundingClientRect();
+                if (rect.width === 0 || rect.height === 0) continue;
+
+                const text = (candidate.innerText || candidate.textContent || '').trim().toLowerCase();
+                const aria = (candidate.getAttribute('aria-label') || '').trim().toLowerCase();
+
+                for (const phrase of highPriorityPhrases) {
+                    if (text === phrase || aria === phrase || (text.startsWith(phrase) && text.length < phrase.length + 15)) {
+                        if (triggerClick(candidate)) {
+                            return { clicked: true, text: text };
+                        }
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // Priority 3: Modal / Commercial dialog close buttons with 'x' or 'close'
+        for (const candidate of candidates) {
+            try {
+                if (candidate.offsetParent === null) continue;
+                const cls = (candidate.className || '').toString().toLowerCase();
+                const id = (candidate.id || '').toLowerCase();
+                const aria = (candidate.getAttribute('aria-label') || '').toLowerCase();
+                const text = (candidate.innerText || candidate.textContent || '').trim().toLowerCase();
+
+                if (aria.includes('close') || cls.includes('modal-close') || cls.includes('close-modal') || cls.includes('popup-close') || cls.includes('dialog-close') || id.includes('close')) {
+                    if (text === '' || text === '×' || text === 'x' || text.includes('close')) {
+                        if (triggerClick(candidate)) {
+                            return { clicked: true, method: 'modalClose' };
+                        }
+                    }
+                }
+            } catch (e) {}
+        }
+
+        return { clicked: false };
+    }"""
+
+    try:
+        res = page.evaluate(dismiss_script)
+        if res and res.get("clicked"):
+            page.wait_for_timeout(600)
+    except Exception:
+        pass
+
+    # 3. Guardrail: Force-unlock body and documentElement scroll & hide remaining backdrops
+    unlock_script = """() => {
+        document.documentElement.style.setProperty('overflow', 'auto', 'important');
+        document.body.style.setProperty('overflow', 'auto', 'important');
+        document.body.style.setProperty('position', 'static', 'important');
+        document.body.classList.remove('modal-open', 'overflow-hidden', 'no-scroll', 'has-modal', 'dialog-prevent-scroll');
+
+        const backdrops = document.querySelectorAll(
+            '.modal-backdrop, .dialog-backdrop, [class*="overlay" i][style*="position"], [class*="scrim" i], .dialog-widget, .elementor-popup-modal, [class*="popup-modal" i]'
+        );
+        backdrops.forEach(b => {
+            if (b) {
+                b.style.setProperty('display', 'none', 'important');
+                b.style.setProperty('visibility', 'hidden', 'important');
+                b.style.setProperty('opacity', '0', 'important');
+                b.style.setProperty('pointer-events', 'none', 'important');
+            }
+        });
+    }"""
+    try:
+        page.evaluate(unlock_script)
+    except Exception:
+        pass
 
 STEALTH_JS = """
 Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
@@ -87,8 +263,12 @@ def wait_for_page_ready(page, max_wait=30, stabilization_delay=2.0, hide_banners
     except Exception:
         pass
 
-    # 3. Clean banners & scrollbars
+    # 3. Proactive dismissal of cookie consent, enter site, and commercial popups
     if hide_banners:
+        try:
+            dismiss_popups_and_dialogs(page)
+        except Exception:
+            pass
         try:
             page.add_style_tag(content=CLEANUP_CSS)
         except Exception:
@@ -102,6 +282,17 @@ def wait_for_page_ready(page, max_wait=30, stabilization_delay=2.0, hide_banners
         }""")
     except Exception:
         pass
+
+    # Second pass dismissal in case scrolling triggered delayed promotional popups
+    if hide_banners:
+        try:
+            dismiss_popups_and_dialogs(page)
+        except Exception:
+            pass
+        try:
+            page.add_style_tag(content=CLEANUP_CSS)
+        except Exception:
+            pass
 
     # 5. Wait for web fonts
     try:

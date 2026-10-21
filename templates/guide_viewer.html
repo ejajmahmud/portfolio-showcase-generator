@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Official User Guide — Portfolio Showcase Studio</title>
+  <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0b0f19;
+      color: #f8fafc;
+    }
+    .viewer-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+    }
+    /* Liquid Glass Top Toolbar */
+    .viewer-toolbar {
+      height: 60px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 50;
+    }
+    .toolbar-left, .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .btn-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #f1f5f9;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .btn-back:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+    .doc-meta {
+      display: flex;
+      flex-direction: column;
+    }
+    .doc-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+    .doc-subtitle {
+      font-size: 0.72rem;
+      color: #94a3b8;
+    }
+    .role-badge {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .btn-download {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      background: #0071e3;
+      border: 1px solid #2563eb;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(0, 113, 227, 0.35);
+      transition: all 0.2s ease;
+    }
+    .btn-download:hover {
+      background: #0077ed;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0, 113, 227, 0.45);
+    }
+    /* Frame Viewport */
+    .viewer-frame {
+      flex: 1;
+      width: 100%;
+      height: calc(100vh - 60px);
+      border: none;
+      background: #1e293b;
+    }
+  </style>
+</head>
+<body>
+  <div class="viewer-container">
+    <header class="viewer-toolbar">
+      <div class="toolbar-left">
+        <a href="/login" class="btn-back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          <span>Return to Studio</span>
+        </a>
+        <div class="doc-meta">
+          <div class="doc-title">Portfolio Showcase Studio — Guest Operations Manual</div>
+          <div class="doc-subtitle">v2.4.0 Production • Shinjiru Cloud Infrastructure</div>
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <div class="role-badge">Guest Guide</div>
+        <a href="/static/docs/Portfolio_Showcase_Studio_Guest_User_Guide.pdf" download="Portfolio_Showcase_Studio_Guest_User_Guide.pdf" class="btn-download">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Download PDF</span>
+        </a>
+      </div>
+    </header>
+
+    <iframe class="viewer-frame" src="/static/docs/Portfolio_Showcase_Studio_Guest_User_Guide.pdf#toolbar=1&navpanes=0&scrollbar=1" type="application/pdf">
+      <p style="padding: 20px; color: #cbd5e1;">Your browser does not support embedded PDF viewing. <a href="/static/docs/Portfolio_Showcase_Studio_Guest_User_Guide.pdf" style="color: #38bdf8;">Click here to download the PDF</a>.</p>
+    </iframe>
+  </div>
+</body>
+</html>
