@@ -259,7 +259,7 @@ async def api_guest_login(request: Request):
         "role": "guest",
         "display_name": "Guest User"
     }
-    token = create_token("guest", "guest")
+    token = create_token("guest", "guest", "Guest User")
     is_https = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
     
     response = JSONResponse(content={
