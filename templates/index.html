@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio Showcase Generator — bezel.fit iPhone 17 Pro Max</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="brand">
+          <div class="brand-badge">PRO</div>
+          <div class="brand-title">
+            <h1>Showcase Studio</h1>
+            <p>Automated Agency Portfolio Generator • bezel.fit iPhone 17 Pro Max • iPad • Desktop</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <span class="badge-tag">Playwright Engine</span>
+          <span class="badge-tag accent">WebP • PNG • JPG</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="app-main">
+      <!-- Input Card -->
+      <section class="card input-card">
+        <form id="generator-form" class="generator-form">
+          <div class="form-row main-input-row">
+            <div class="input-group url-group">
+              <label for="site-url">
+                <span class="label-text">Website URL</span>
+                <span class="label-hint">Paste any live project link</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+                <input type="text" id="site-url" placeholder="https://my-client-website.com" required autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="input-group name-group">
+              <label for="project-name">
+                <span class="label-text">Project Name</span>
+                <span class="label-hint">Optional (auto-detected)</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <input type="text" id="project-name" placeholder="e.g. Capace, Dalwa7" autocomplete="off" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Options Drawer Toggle -->
+          <div class="options-accordion">
+            <div class="options-header" id="options-toggle">
+              <div class="options-title">
+                <svg class="opt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                <span>Device Styling & Customization</span>
+              </div>
+              <span class="chevron" id="chevron">▼</span>
+            </div>
+
+            <div class="options-body" id="options-body">
+              <div class="options-grid">
+                <div class="opt-field">
+                  <label>iPhone 17 Pro Max Frame Finish</label>
+                  <select id="mobile-finish">
+                    <option value="deep-blue" selected>Deep Blue (Recommended)</option>
+                    <option value="silver">Silver</option>
+                    <option value="cosmic-orange">Cosmic Orange</option>
+                  </select>
+                </div>
+
+                <div class="opt-field">
+                  <label>Tablet Frame</label>
+                  <select id="tablet-finish">
+                    <option value="space-black" selected>iPad Space Black</option>
+                    <option value="silver">iPad Silver</option>
+                  </select>
+                </div>
+
+                <div class="opt-field">
+                  <label>Showcase Background</label>
+                  <select id="bg-color">
+                    <option value="#ffffff" selected>Pure White (#FFFFFF - Standard)</option>
+                    <option value="transparent">Transparent (PNG & WebP)</option>
+                    <option value="#f8fafc">Soft Slate (#F8FAFC)</option>
+                    <option value="#0f172a">Dark Navy (#0F172A)</option>
+                  </select>
+                </div>
+
+                <div class="opt-field">
+                  <label>Drop Shadow Intensity</label>
+                  <select id="shadow-intensity">
+                    <option value="normal" selected>Normal (3D Agency Standard)</option>
+                    <option value="subtle">Subtle</option>
+                    <option value="bold">Bold & Deep</option>
+                  </select>
+                </div>
+
+                <div class="opt-field">
+                  <label>Full Load & Cloudflare Wait</label>
+                  <select id="capture-delay">
+                    <option value="2.0" selected>Smart Wait + 2s Delay (Recommended)</option>
+                    <option value="3.5">Smart Wait + 3.5s Delay (Heavy SPAs)</option>
+                    <option value="5.0">Smart Wait + 5s Delay (Animations)</option>
+                  </select>
+                </div>
+
+                <div class="opt-field">
+                  <label>Browser Capture Mode</label>
+                  <select id="browser-mode">
+                    <option value="headless" selected>Stealth Background (Default)</option>
+                    <option value="visible">Visible Browser (For manual Captchas/VPN)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" id="generate-btn" class="generate-btn">
+            <span class="btn-icon">⚡</span>
+            <span class="btn-text">Generate Portfolio Showcase</span>
+          </button>
+        </form>
+
+        <!-- Progress Tracker -->
+        <div id="progress-container" class="progress-container hidden">
+          <div class="progress-bar-bg">
+            <div id="progress-bar-fill" class="progress-bar-fill"></div>
+          </div>
+          <div class="progress-status">
+            <div class="spinner"></div>
+            <span id="progress-message">Initializing capture engine...</span>
+          </div>
+          <div class="progress-steps">
+            <div class="step-pill" id="step-desk">1. Desktop View</div>
+            <div class="step-pill" id="step-mob">2. iPhone 17 Pro Max</div>
+            <div class="step-pill" id="step-tab">3. Tablet View</div>
+            <div class="step-pill" id="step-frame">4. bezel.fit Frame</div>
+            <div class="step-pill" id="step-comp">5. 3D Compositing</div>
+            <div class="step-pill" id="step-exp">6. WebP/PNG/JPG Export</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results View -->
+      <section id="results-card" class="card results-card hidden">
+        <div class="results-header">
+          <div class="results-info">
+            <h2 id="result-title">Project Showcase</h2>
+            <p id="result-url" class="result-url">https://example.com</p>
+          </div>
+
+          <!-- View Switcher Tabs -->
+          <div class="tab-switcher">
+            <button class="tab-btn active" data-view="showcase">✨ Full Showcase</button>
+            <button class="tab-btn" data-view="mobile">📱 iPhone 17 Pro Max</button>
+            <button class="tab-btn" data-view="tablet">📟 iPad</button>
+            <button class="tab-btn" data-view="desktop">💻 Desktop</button>
+          </div>
+        </div>
+
+        <!-- Canvas / Preview Box -->
+        <div class="preview-stage" id="preview-stage">
+          <div class="preview-backdrop" id="preview-backdrop">
+            <img id="preview-image" src="" alt="Showcase Preview" />
+          </div>
+          <div class="stage-controls">
+            <button id="toggle-bg-btn" class="stage-control-btn" title="Toggle Checkerboard Background">
+              🏁 Toggle Transparency
+            </button>
+            <a id="open-full-btn" href="#" target="_blank" class="stage-control-btn" title="Open Full Resolution">
+              🔍 Full Resolution
+            </a>
+          </div>
+        </div>
+
+        <!-- Download Action Center -->
+        <div class="download-section">
+          <div class="download-title">Download Production Assets</div>
+          <div class="download-buttons">
+            <a id="btn-dl-webp" href="#" download class="dl-btn format-webp">
+              <span class="dl-badge">WEBP</span>
+              <span class="dl-desc">Optimized Web Standard</span>
+              <span class="dl-action">Download WebP ↓</span>
+            </a>
+
+            <a id="btn-dl-png" href="#" download class="dl-btn format-png">
+              <span class="dl-badge">PNG</span>
+              <span class="dl-desc">Lossless High-Res</span>
+              <span class="dl-action">Download PNG ↓</span>
+            </a>
+
+            <a id="btn-dl-jpg" href="#" download class="dl-btn format-jpg">
+              <span class="dl-badge">JPG</span>
+              <span class="dl-desc">Universal Crisp 95%</span>
+              <span class="dl-action">Download JPG ↓</span>
+            </a>
+
+            <a id="btn-dl-zip" href="#" download class="dl-btn format-zip highlight">
+              <span class="dl-badge">ZIP PACKAGE</span>
+              <span class="dl-desc">All Formats + Device Shots</span>
+              <span class="dl-action">Download All (ZIP) 📦</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- History / Gallery Section -->
+      <section class="card history-card">
+        <div class="history-header">
+          <h3>Recent Project Showcases</h3>
+          <span class="history-count" id="history-count">0 items</span>
+        </div>
+        <div class="history-grid" id="history-grid">
+          <div class="empty-history">No showcases generated yet. Enter a link above to create your first portfolio asset!</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Showcase Studio • Built for Agency Portfolio Automation with official bezel.fit frames</p>
+    </footer>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

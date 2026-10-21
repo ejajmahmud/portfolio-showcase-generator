@@ -1,0 +1,36 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
+*.log
+.DS_Store
+Thumbs.db
+
+# Test scratch folders
+test_captures/
+test_*.py
+crop_*.py
+measure_*.py
+inspect_*.py
+find_*.py
+make_*.py
+detail_*.py
+check_*.py
+scan_*.py
+bezel_page.html
+bezel_index.js
+card_*.png
+item*.png
+tablet_*.png
+phone_*.png
+mockup*.png
+
+# Large exports (keep history.json template if needed)
+exports/*/
+exports/*.zip
+exports/*.png
+exports/*.jpg
+exports/*.webp
