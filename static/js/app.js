@@ -20,6 +20,16 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('portfolio-showcase-theme', theme);
+
+    // Update Mobile Drawer Theme status & badge
+    const drawerThemeStatus = document.getElementById('drawer-theme-status');
+    const drawerThemeBadge = document.getElementById('drawer-theme-badge');
+    if (drawerThemeStatus) {
+      drawerThemeStatus.textContent = theme === 'dark' ? 'Obsidian Mesh (Dark)' : 'Mac Luminous (Light)';
+    }
+    if (drawerThemeBadge) {
+      drawerThemeBadge.textContent = theme === 'dark' ? 'Dark' : 'Light';
+    }
   }
 
   // Initialize theme
@@ -27,6 +37,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (themeToggle) {
     themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    });
+  }
+
+  const drawerThemeBtn = document.getElementById('drawer-theme-toggle-btn');
+  if (drawerThemeBtn) {
+    drawerThemeBtn.addEventListener('click', () => {
       const current = document.documentElement.getAttribute('data-theme') || 'light';
       const next = current === 'dark' ? 'light' : 'dark';
       applyTheme(next);
@@ -393,15 +412,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatarEl = document.getElementById('user-avatar');
     const badgeEl = document.getElementById('user-role-badge');
 
-    if (nameEl) nameEl.textContent = user.display_name || user.username;
-    if (avatarEl) avatarEl.textContent = (user.display_name || user.username).charAt(0).toUpperCase();
+    // Mobile Drawer elements
+    const drawerAvatar = document.getElementById('drawer-user-avatar');
+    const drawerName = document.getElementById('drawer-user-display-name');
+    const drawerBadge = document.getElementById('drawer-user-role-badge');
+    const drawerManageBtn = document.getElementById('drawer-manage-users-btn');
+
+    const displayName = user.display_name || user.username;
+    const initial = (user.username || 'U').charAt(0).toUpperCase();
+    const roleUpper = (user.role || 'viewer').toUpperCase();
+
+    if (nameEl) nameEl.textContent = displayName;
+    if (avatarEl) avatarEl.textContent = initial;
     if (badgeEl) {
-      badgeEl.textContent = user.role.toUpperCase();
+      badgeEl.textContent = roleUpper;
       badgeEl.className = `role-badge role-${user.role}`;
     }
 
-    if (user.role === 'admin' && manageUsersBtn) {
-      manageUsersBtn.classList.remove('hidden');
+    if (drawerName) drawerName.textContent = displayName;
+    if (drawerAvatar) drawerAvatar.textContent = initial;
+    if (drawerBadge) {
+      drawerBadge.textContent = roleUpper;
+      drawerBadge.className = `drawer-user-role role-badge role-${user.role}`;
+    }
+
+    if (user.role === 'admin') {
+      if (manageUsersBtn) manageUsersBtn.classList.remove('hidden');
+      if (drawerManageBtn) drawerManageBtn.classList.remove('hidden');
+    } else {
+      if (manageUsersBtn) manageUsersBtn.classList.add('hidden');
+      if (drawerManageBtn) drawerManageBtn.classList.add('hidden');
     }
 
     if (user.role === 'viewer') {
@@ -427,15 +467,74 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHistory();
   }
 
-  // Logout Handler
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-      try {
-        await fetch('/api/auth/logout', { method: 'POST' });
-      } catch (e) {}
-      localStorage.removeItem('portfolio_user');
-      window.location.href = '/login';
+  // Mobile Hamburger & Side Drawer Handlers
+  const mobileHamburgerBtn = document.getElementById('mobile-hamburger-btn');
+  const mobileDrawerOverlay = document.getElementById('mobile-drawer-overlay');
+  const drawerCloseBtn = document.getElementById('drawer-close-btn');
+  const drawerLogoutBtn = document.getElementById('drawer-logout-btn');
+  const drawerManageUsersBtn = document.getElementById('drawer-manage-users-btn');
+
+  function openMobileDrawer() {
+    if (!mobileDrawerOverlay) return;
+    mobileDrawerOverlay.classList.remove('hidden');
+    mobileDrawerOverlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMobileDrawer() {
+    if (!mobileDrawerOverlay) return;
+    mobileDrawerOverlay.classList.add('hidden');
+    mobileDrawerOverlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  if (mobileHamburgerBtn) {
+    mobileHamburgerBtn.addEventListener('click', openMobileDrawer);
+  }
+
+  if (drawerCloseBtn) {
+    drawerCloseBtn.addEventListener('click', closeMobileDrawer);
+  }
+
+  if (mobileDrawerOverlay) {
+    mobileDrawerOverlay.addEventListener('click', (e) => {
+      if (e.target === mobileDrawerOverlay) {
+        closeMobileDrawer();
+      }
     });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mobileDrawerOverlay && !mobileDrawerOverlay.classList.contains('hidden')) {
+      closeMobileDrawer();
+    }
+  });
+
+  if (drawerManageUsersBtn) {
+    drawerManageUsersBtn.addEventListener('click', () => {
+      closeMobileDrawer();
+      if (userModal) {
+        userModal.classList.remove('hidden');
+        loadUsers();
+      }
+    });
+  }
+
+  // Logout Handlers
+  async function performLogout() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {}
+    localStorage.removeItem('portfolio_user');
+    window.location.href = '/login';
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', performLogout);
+  }
+
+  if (drawerLogoutBtn) {
+    drawerLogoutBtn.addEventListener('click', performLogout);
   }
 
   // --------------------------------------------------------------------------

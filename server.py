@@ -53,6 +53,11 @@ app.add_middleware(
 async def health_check():
     return {"status": "healthy", "service": "portfolio-showcase-generator"}
 
+# Favicon endpoint
+@app.get("/favicon.ico", include_in_schema=False)
+async def get_favicon():
+    return FileResponse(os.path.join(BASE_DIR, "static", "img", "favicon.ico"), media_type="image/x-icon")
+
 # Mount static and exports directories
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 app.mount("/exports", StaticFiles(directory=EXPORTS_DIR), name="exports")
