@@ -1051,7 +1051,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --------------------------------------------------------------------------
   // Display Generated Result
   // --------------------------------------------------------------------------
-  function displayResult(data) {
+  function displayResult(data, shouldScroll = true) {
     currentResultData = data;
     if (!resultsCard) return;
 
@@ -1077,8 +1077,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setupDownloadLink(dlMetadataJson, ex.metadata_json);
     setupDownloadLink(dlZipAll, ex.zip);
 
-    // Scroll smoothly to results card
-    resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Scroll smoothly to results card only if explicitly requested
+    if (shouldScroll) {
+      resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   function setupDownloadLink(element, path) {
@@ -1430,10 +1432,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentPage = 1;
       renderHistory();
 
-      // If results are not showing, auto-display the most recent item as a preview
-      if (allHistory.length > 0 && resultsCard && resultsCard.classList.contains('hidden')) {
-        displayResult(allHistory[0]);
-      }
+      // Maintain initial view on generator deck; clicking any showcase in gallery opens results
     } catch (e) {
       console.error('Failed to load project history:', e);
     }
