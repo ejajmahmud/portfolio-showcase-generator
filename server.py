@@ -29,6 +29,7 @@ app.add_middleware(
 
 # Health check for cloud deployment platforms (Render, Railway, Docker, AWS, etc.)
 @app.get("/health")
+@app.head("/health")
 async def health_check():
     return {"status": "healthy", "service": "portfolio-showcase-generator"}
 
@@ -79,6 +80,7 @@ def save_history(entry):
         json.dump(history, f, indent=2)
 
 @app.get("/", response_class=HTMLResponse)
+@app.head("/")
 async def index(request: Request):
     try:
         return templates.TemplateResponse(request=request, name="index.html")
