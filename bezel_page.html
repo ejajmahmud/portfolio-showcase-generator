@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>bezel.fit — Device frame API for iOS simulator & Android emulator screenshots</title>
+  <meta name="description" content="Drop a screenshot from Xcode's iOS simulator or Android Studio's Android emulator, get back a framed PNG on the background of your choice. One POST request, no SDK." />
+  <link rel="canonical" href="https://bezel.fit/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="bezel.fit" />
+  <meta property="og:url" content="https://bezel.fit/" />
+  <meta property="og:title" content="bezel.fit — Device frame API for iOS simulator & Android emulator screenshots" />
+  <meta property="og:description" content="Drop a simulator or emulator screenshot, get back a framed PNG on the background of your choice. One POST request, no SDK, no signup." />
+  <meta property="og:image" content="https://bezel.fit/examples/bezel-fit-og.webp" />
+  <meta property="og:image:type" content="image/webp" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="bezel.fit — frame your simulator screenshots. iPhone 17 Pro in cosmic-orange next to the bezel.fit wordmark." />
+  <meta property="og:locale" content="en_US" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="bezel.fit — Device frame API for iOS simulator & Android emulator screenshots" />
+  <meta name="twitter:description" content="Drop a simulator or emulator screenshot, get back a framed PNG on the background of your choice. One POST request, no SDK, no signup." />
+  <meta name="twitter:image" content="https://bezel.fit/examples/bezel-fit-og.webp" />
+  <meta name="twitter:image:alt" content="bezel.fit — frame your simulator screenshots. iPhone 17 Pro in cosmic-orange next to the bezel.fit wordmark." />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#1F2125" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://bezel.fit/#website",
+        "url": "https://bezel.fit/",
+        "name": "bezel.fit",
+        "description": "Device frame API for iOS simulator and Android emulator screenshots.",
+        "inLanguage": "en"
+      },
+      {
+        "@type": "WebAPI",
+        "@id": "https://bezel.fit/#api",
+        "name": "bezel.fit Frame API",
+        "description": "HTTP API that takes a raw simulator or emulator screenshot and returns a PNG composited inside a device frame on a configurable background.",
+        "url": "https://bezel.fit/",
+        "documentation": "https://bezel.fit/",
+        "termsOfService": "https://bezel.fit/terms",
+        "isAccessibleForFree": true,
+        "provider": {
+          "@type": "Person",
+          "name": "Jonas Adler",
+          "url": "https://github.com/jadlr"
+        }
+      }
+    ]
+  }
+  </script>
+  <script type="module" crossorigin src="/assets/index-DkWJvv_w.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/app-CTftAffL.css">
+</head>
+<body class="font-sans text-text bg-bg">
+
+  <div aria-hidden="true"
+       class="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[600px]
+              bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,var(--color-accent-soft),transparent_70%)]"></div>
+
+  <main class="mx-auto max-w-5xl px-6 py-24 md:py-32">
+
+    <!-- ========== Hero ========== -->
+    <section class="mb-32">
+      <p class="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.18em] text-text-muted mb-8">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="h-4 w-4 shrink-0">
+          <mask id="logo-screen"><rect width="24" height="24" fill="#fff"/><rect x="8.5" y="5" width="7" height="14" rx="1.5" fill="#000"/></mask>
+          <rect x="6" y="2" width="12" height="20" rx="3" fill="#DC5F00" mask="url(#logo-screen)"/>
+        </svg>
+        bezel.fit · v1 · stable
+      </p>
+
+      <h1 class="text-3xl sm:text-4xl md:text-display font-semibold tracking-[-0.02em]">
+        Frame your simulator screenshots.
+      </h1>
+
+      <p class="mt-8 max-w-3xl text-md text-text-muted">
+        Drop a screenshot from Xcode's iOS simulator or Android Studio's Android emulator,
+        get back a framed PNG on the background of your choice. One POST
+        request. No SDK, no scaling, no signup.
+      </p>
+
+      <div class="mt-12 flex flex-wrap items-center gap-4">
+        <a href="#build"
+           class="bg-accent text-text px-5 py-3 rounded-md font-medium
+                  hover:bg-accent-hover hover:shadow-accent
+                  focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring
+                  transition">
+          Try it ↓
+        </a>
+        <a href="#examples"
+           class="text-text underline decoration-text-faint hover:decoration-accent decoration-2 underline-offset-2 transition">
+          See examples ↓
+        </a>
+      </div>
+    </section>
+
+    <!-- ========== Builder ========== -->
+    <section id="build" class="mb-32 scroll-mt-12">
+      <p class="font-mono text-xs uppercase tracking-[0.08em] text-text-muted mb-3">01 — Build</p>
+      <h2 class="text-3xl font-semibold tracking-[-0.02em] mb-2">Build your command</h2>
+      <p class="text-base text-text-muted mb-10 max-w-3xl">
+        Pick a device and tweak the options. The preview and curl update
+        live: every change re-composites in your browser against the
+        bundled sample, so the preview matches what the API would return.
+      </p>
+
+      <div class="border border-border-strong rounded-lg p-6 md:p-10 shadow-raised space-y-10">
+
+        <!-- ----- Top: Form + Preview ----- -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+
+          <!-- Form -->
+          <div class="space-y-8">
+
+            <!-- Device -->
+            <div>
+              <label for="dev-device" class="block font-mono text-xs uppercase tracking-[0.08em] text-text-muted mb-2">
+                Device
+              </label>
+              <select id="dev-device"
+                      class="bg-surface border border-border-strong rounded-sm px-3 py-2 text-text w-full
+                             focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent-ring transition">
+              </select>
+            </div>
+
+            <!-- Finish (only shown if device has finishes) -->
+            <div id="dev-finish-wrap">
+              <label for="dev-finish" class="block font-mono text-xs uppercase tracking-[0.08em] text-text-muted mb-2">
+                Finish
+              </label>
+              <select id="dev-finish"
+                      class="bg-surface border border-border-strong rounded-sm px-3 py-2 text-text w-full
+                             focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent-ring transition">
+              </select>
+            </div>
+
+            <!-- Background mode -->
+            <div>
+              <p class="font-mono text-xs uppercase tracking-[0.08em] text-text-muted mb-2">Background</p>
+              <div class="flex flex-wrap gap-4 text-sm">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="bg-mode" value="transparent" checked
+                         class="accent-accent" />
+                  <span>transparent</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="bg-mode" value="solid" class="accent-accent" />
+                  <span>solid color</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="bg-mode" value="linear" class="accent-accent" />
+                  <span>linear gradient</span>
+                </label>
+              </div>
+
+              <div id="bg-solid-wrap" hidden class="mt-3 flex items-center gap-3">
+                <input id="bg-solid-color" type="color" value="#0d1117"
+                       class="bg-surface border border-border-strong rounded-sm h-10 w-20 cursor-pointer" />
+                <span class="font-mono text-xs text-text-muted">color picker</span>
+              </div>
+
+              <div id="bg-linear-wrap" hidden class="mt-3 space-y-3">
+                <div class="flex items-center gap-3">
+                  <input id="bg-linear-a" type="color" value="#ff7a18"
+                         class="bg-surface border border-border-strong rounded-sm h-10 w-20 cursor-pointer" />
+                  <input id="bg-linear-b" type="color" value="#af002d"
+                         class="bg-surface border border-border-strong rounded-sm h-10 w-20 cursor-pointer" />
+                  <span class="font-mono text-xs text-text-muted">two stops</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <input id="bg-linear-deg" type="range" min="0" max="360" value="180"
+                         class="accent-accent w-48" />
+                  <span id="bg-linear-deg-label" class="font-mono text-xs text-text-muted w-12">180°</span>
+                  <span class="font-mono text-xs text-text-faint">CSS angle (0° = bottom→top)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preset -->
+            <div>
+              <label for="dev-preset" class="block font-mono text-xs uppercase tracking-[0.08em] text-text-muted mb-2">
+                Preset
+              </label>
+              <select id="dev-preset"
+                      class="bg-surface border border-border-strong rounded-sm px-3 py-2 text-text w-full
+                             focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent-ring transition
+                             disabled:cursor-not-allowed disabled:text-text-faint">
+              </select>
+            </div>
+
+            <!-- Corner radius -->
+            <div>
+              <label for="dev-corner" class="block font-mono text-xs uppercase tracking-[0.08em] text-text-muted mb-2">
+                Corner radius
+              </label>
+              <select id="dev-corner"
+                      class="bg-surface border border-border-strong rounded-sm px-3 py-2 text-text w-full
+                             focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent-ring transition
+                             disabled:cursor-not-allowed disabled:text-text-faint">
+              </select>
+              <p id="canvas-options-hint" class="mt-2 font-mono text-xs text-text-faint">
+                Pick a background to use preset, padding, and corner radius.
+              </p>
+            </div>
+
+            <!-- Padding -->
+            <div>
+              <label for="dev-padding" class="block font-mono text-xs uppercase tracking-[0.08em] text-text-muted mb-2">
+                Padding
+              </label>
+              <select id="dev-padding"
+                      class="bg-surface border border-border-strong rounded-sm px-3 py-2 text-text w-full
+                             focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent-ring transition
+                             disabled:cursor-not-allowed disabled:text-text-faint">
+              </select>
+            </div>
+
+          </div>
+
+          <!-- Preview -->
+          <div>
+            <p class="font-mono text-xs uppercase tracking-[0.08em] text-text-muted mb-2">Preview</p>
+            <div id="preview-mount"
+                 class="bg-surface border border-border rounded-md p-5 min-h-[280px] flex flex-col items-center justify-center gap-4">
+              <p id="preview-status" class="text-sm text-text-muted text-center">
+                Loading preview…
+              </p>
+            </div>
+            <p class="mt-2 font-mono text-xs text-text-faint">
+              Composited live in your browser from a bundled sample screenshot. No API calls.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- ----- Capture-first callout (full width) ----- -->
+        <div class="border-l-2 border-accent bg-accent-soft rounded-md p-5 md:p-6">
+          <p class="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.18em] text-accent mb-3">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+                 class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 9v4"/><path d="M12 17h.01"/>
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            </svg>
+            Step 1 — Open the screen you want to frame
+          </p>
+          <p id="prereq-lead" class="text-base text-text max-w-3xl"></p>
+        </div>
+
+        <!-- ----- Step 2: full-width curl ----- -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <p class="font-mono text-xs uppercase tracking-[0.08em] text-text-muted">Step 2 — Run the command</p>
+            <button id="curl-copy" type="button"
+                    class="font-mono text-xs text-text-muted hover:text-accent
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring rounded-sm transition">
+              copy
+            </button>
+          </div>
+          <pre id="curl-output" data-syntax="curl"
+               class="bg-surface border border-border rounded-md p-5 font-mono text-sm overflow-x-auto whitespace-pre"></pre>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========== Options reference ========== -->
+    <section class="mb-32">
+      <p class="font-mono text-xs uppercase tracking-[0.08em] text-text-muted mb-3">02 — Reference</p>
+      <h2 class="text-3xl font-semibold tracking-[-0.02em] mb-2">Options</h2>
+      <p class="text-base text-text-muted mb-10 max-w-3xl">
+        Every option the API accepts, with grammar, defaults, and a one-liner curl.
+      </p>
+
+      <div class="space-y-16">
+
+        <!-- :id -->
+        <article>
+          <p class="font-mono text-xs uppercase tracking-[0.18em] text-accent mb-3">:id · path · required</p>
+          <h3 class="text-xl font-semibold tracking-[-0.01em] mb-2">Device</h3>
+          <p class="text-base text-text-muted mb-5 max-w-3xl">
+            Picks the device frame and the expected screenshot dimensions.
+            The PNG body must match the viewport <em>exactly</em>. Anything
+            else gets rejected with <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">dimension_mismatch</code>.
+          </p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm border border-border rounded-md overflow-hidden">
+              <thead class="bg-surface">
+                <tr class="text-left">
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">id</th>
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">device</th>
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">platform</th>
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">viewport</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border">
+                <tr><td class="font-mono px-4 py-3">iphone-17</td><td class="px-4 py-3">iPhone 17</td><td class="px-4 py-3 text-text-muted">ios</td><td class="font-mono px-4 py-3">1206 × 2622</td></tr>
+                <tr><td class="font-mono px-4 py-3">iphone-17-pro</td><td class="px-4 py-3">iPhone 17 Pro</td><td class="px-4 py-3 text-text-muted">ios</td><td class="font-mono px-4 py-3">1206 × 2622</td></tr>
+                <tr><td class="font-mono px-4 py-3">iphone-17-pro-max</td><td class="px-4 py-3">iPhone 17 Pro Max</td><td class="px-4 py-3 text-text-muted">ios</td><td class="font-mono px-4 py-3">1320 × 2868</td></tr>
+                <tr><td class="font-mono px-4 py-3">iphone-air</td><td class="px-4 py-3">iPhone Air</td><td class="px-4 py-3 text-text-muted">ios</td><td class="font-mono px-4 py-3">1260 × 2736</td></tr>
+                <tr><td class="font-mono px-4 py-3">pixel-10</td><td class="px-4 py-3">Pixel 10</td><td class="px-4 py-3 text-text-muted">android</td><td class="font-mono px-4 py-3">1080 × 2424</td></tr>
+                <tr><td class="font-mono px-4 py-3">pixel-10-pro</td><td class="px-4 py-3">Pixel 10 Pro</td><td class="px-4 py-3 text-text-muted">android</td><td class="font-mono px-4 py-3">1280 × 2856</td></tr>
+                <tr><td class="font-mono px-4 py-3">pixel-10-pro-xl</td><td class="px-4 py-3">Pixel 10 Pro XL</td><td class="px-4 py-3 text-text-muted">android</td><td class="font-mono px-4 py-3">1344 × 2992</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-3 font-mono text-xs text-text-faint">
+            Hit <code class="bg-surface text-text px-1.5 py-0.5 rounded-sm">GET /v1/devices</code> for the live list.
+          </p>
+        </article>
+
+        <!-- finish -->
+        <article>
+          <p class="font-mono text-xs uppercase tracking-[0.18em] text-accent mb-3">finish · query · optional</p>
+          <h3 class="text-xl font-semibold tracking-[-0.01em] mb-2">Color variant</h3>
+          <p class="text-base text-text-muted mb-5 max-w-3xl">
+            Picks a finish other than the device default. iPhone-only — Pixel
+            frames don't have color variants. Using a finish a device doesn't
+            have returns
+            <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">unsupported_finish</code>
+            with the available list inline.
+          </p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm border border-border rounded-md overflow-hidden">
+              <thead class="bg-surface">
+                <tr class="text-left">
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">device</th>
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">default</th>
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">finishes</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border">
+                <tr><td class="font-mono px-4 py-3">iphone-17</td><td class="font-mono px-4 py-3 text-text-muted">black</td><td class="font-mono px-4 py-3">black, white, mist-blue, sage, lavender</td></tr>
+                <tr><td class="font-mono px-4 py-3">iphone-17-pro</td><td class="font-mono px-4 py-3 text-text-muted">silver</td><td class="font-mono px-4 py-3">silver, cosmic-orange, deep-blue</td></tr>
+                <tr><td class="font-mono px-4 py-3">iphone-17-pro-max</td><td class="font-mono px-4 py-3 text-text-muted">silver</td><td class="font-mono px-4 py-3">silver, cosmic-orange, deep-blue</td></tr>
+                <tr><td class="font-mono px-4 py-3">iphone-air</td><td class="font-mono px-4 py-3 text-text-muted">space-black</td><td class="font-mono px-4 py-3">space-black, cloud-white, light-gold, sky-blue</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <pre data-syntax="curl" class="bg-surface border border-border rounded-md p-5 font-mono text-sm overflow-x-auto mt-5"># cosmic-orange iPhone 17 Pro
+curl -X POST 'https://bezel.fit/v1/devices/iphone-17-pro/frame?finish=cosmic-orange' \
+  --data-binary @screen.png --fail -o framed.png</pre>
+        </article>
+
+        <!-- background -->
+        <article>
+          <p class="font-mono text-xs uppercase tracking-[0.18em] text-accent mb-3">background · query · optional</p>
+          <h3 class="text-xl font-semibold tracking-[-0.01em] mb-2">Canvas fill</h3>
+          <p class="text-base text-text-muted mb-5 max-w-3xl">
+            Without this, output is the frame's native size with a transparent
+            canvas. Setting any non-transparent value enables canvas mode and
+            unlocks <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">preset</code> /
+            <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">padding</code> /
+            <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">cornerRadius</code>.
+          </p>
+          <pre class="bg-surface border border-border rounded-md p-5 font-mono text-sm overflow-x-auto mb-5"><span class="text-text-muted"># grammar</span>
+transparent
+color:&lt;hex&gt;                       <span class="text-text-muted"># #rgb · #rgba · #rrggbb · #rrggbbaa</span>
+linear:&lt;hexA&gt;,&lt;hexB&gt;[,&lt;deg&gt;deg]    <span class="text-text-muted"># default 180deg (top→bottom)</span></pre>
+          <pre data-syntax="curl" class="bg-surface border border-border rounded-md p-5 font-mono text-sm overflow-x-auto"># story-sized canvas with a sunset gradient
+curl -X POST 'https://bezel.fit/v1/devices/iphone-17-pro/frame?preset=ig-story&background=linear:%23ff7a18,%23af002d,135deg' \
+  --data-binary @screen.png --fail -o framed.png</pre>
+        </article>
+
+        <!-- preset -->
+        <article>
+          <p class="font-mono text-xs uppercase tracking-[0.18em] text-accent mb-3">preset · query · optional</p>
+          <h3 class="text-xl font-semibold tracking-[-0.01em] mb-2">Output canvas size</h3>
+          <p class="text-base text-text-muted mb-5 max-w-3xl">
+            Centers the frame on a fixed-size canvas with ~10% breathing room.
+            The frame is downscaled with premultiplied-alpha box filtering, so
+            rounded corners stay clean against the background.
+            Requires a non-transparent background.
+          </p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm border border-border rounded-md overflow-hidden">
+              <thead class="bg-surface">
+                <tr class="text-left">
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">name</th>
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">pixels</th>
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">use</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border">
+                <tr><td class="font-mono px-4 py-3">ig-square</td><td class="font-mono px-4 py-3">1080 × 1080</td><td class="px-4 py-3 text-text-muted">Instagram feed (1:1)</td></tr>
+                <tr><td class="font-mono px-4 py-3">ig-portrait</td><td class="font-mono px-4 py-3">1080 × 1350</td><td class="px-4 py-3 text-text-muted">Instagram feed (4:5)</td></tr>
+                <tr><td class="font-mono px-4 py-3">ig-story</td><td class="font-mono px-4 py-3">1080 × 1920</td><td class="px-4 py-3 text-text-muted">Story / TikTok (9:16)</td></tr>
+                <tr><td class="font-mono px-4 py-3">x-landscape</td><td class="font-mono px-4 py-3">1600 × 900</td><td class="px-4 py-3 text-text-muted">X / Twitter (16:9)</td></tr>
+                <tr><td class="font-mono px-4 py-3">linkedin-share</td><td class="font-mono px-4 py-3">1200 × 627</td><td class="px-4 py-3 text-text-muted">LinkedIn shared image</td></tr>
+                <tr><td class="font-mono px-4 py-3">og-image</td><td class="font-mono px-4 py-3">1200 × 630</td><td class="px-4 py-3 text-text-muted">Open Graph / blog hero</td></tr>
+                <tr><td class="font-mono px-4 py-3">app-store</td><td class="font-mono px-4 py-3">1320 × 2868</td><td class="px-4 py-3 text-text-muted">Apple App Store (6.9" iPhone)</td></tr>
+                <tr><td class="font-mono px-4 py-3">play-store</td><td class="font-mono px-4 py-3">1080 × 1920</td><td class="px-4 py-3 text-text-muted">Google Play Store phone (9:16)</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <pre data-syntax="curl" class="bg-surface border border-border rounded-md p-5 font-mono text-sm overflow-x-auto mt-5"># 1080×1080 Instagram square on a dark fill
+curl -X POST 'https://bezel.fit/v1/devices/pixel-10/frame?preset=ig-square&background=color:%230d1117' \
+  --data-binary @screen.png --fail -o framed.png</pre>
+        </article>
+
+        <!-- cornerRadius -->
+        <article>
+          <p class="font-mono text-xs uppercase tracking-[0.18em] text-accent mb-3">cornerRadius · query · optional</p>
+          <h3 class="text-xl font-semibold tracking-[-0.01em] mb-2">Canvas corners</h3>
+          <p class="text-base text-text-muted mb-5 max-w-3xl">
+            Rounds the canvas corners with a 1-pixel feather for clean
+            anti-aliasing. Each tier is a fraction of the shorter canvas axis,
+            so the same tier scales sensibly across presets. No-op in
+            transparent mode.
+          </p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm border border-border rounded-md overflow-hidden">
+              <thead class="bg-surface">
+                <tr class="text-left">
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">tier</th>
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">fraction</th>
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">@ 1080×1080</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border">
+                <tr><td class="font-mono px-4 py-3">none</td><td class="font-mono px-4 py-3">0</td><td class="font-mono px-4 py-3 text-text-muted">0 px</td></tr>
+                <tr><td class="font-mono px-4 py-3">sm</td><td class="font-mono px-4 py-3">0.02</td><td class="font-mono px-4 py-3 text-text-muted">22 px</td></tr>
+                <tr><td class="font-mono px-4 py-3">md</td><td class="font-mono px-4 py-3">0.04</td><td class="font-mono px-4 py-3 text-text-muted">43 px</td></tr>
+                <tr><td class="font-mono px-4 py-3">lg</td><td class="font-mono px-4 py-3">0.08</td><td class="font-mono px-4 py-3 text-text-muted">86 px</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <pre data-syntax="curl" class="bg-surface border border-border rounded-md p-5 font-mono text-sm overflow-x-auto mt-5"># rounded canvas corners on an OG image
+curl -X POST 'https://bezel.fit/v1/devices/iphone-17-pro-max/frame?preset=og-image&background=color:%230d1117&cornerRadius=md' \
+  --data-binary @screen.png --fail -o framed.png</pre>
+        </article>
+
+        <!-- padding -->
+        <article>
+          <p class="font-mono text-xs uppercase tracking-[0.18em] text-accent mb-3">padding · query · optional</p>
+          <h3 class="text-xl font-semibold tracking-[-0.01em] mb-2">Breathing room</h3>
+          <p class="text-base text-text-muted mb-5 max-w-3xl">
+            Adds space on each side between the device and the canvas edges.
+            Each tier is a fraction of the shorter canvas axis. Omit it for
+            the defaults (10% inside a preset, 0% in background-only mode);
+            <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">padding=none</code>
+            packs the device flush against the edges. No-op in transparent
+            mode.
+          </p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm border border-border rounded-md overflow-hidden">
+              <thead class="bg-surface">
+                <tr class="text-left">
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">tier</th>
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">fraction</th>
+                  <th class="font-mono font-medium text-xs uppercase tracking-[0.08em] text-text-muted px-4 py-3">@ 1080×1080</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border">
+                <tr><td class="font-mono px-4 py-3">none</td><td class="font-mono px-4 py-3">0</td><td class="font-mono px-4 py-3 text-text-muted">0 px</td></tr>
+                <tr><td class="font-mono px-4 py-3">sm</td><td class="font-mono px-4 py-3">0.05</td><td class="font-mono px-4 py-3 text-text-muted">54 px</td></tr>
+                <tr><td class="font-mono px-4 py-3">md</td><td class="font-mono px-4 py-3">0.10</td><td class="font-mono px-4 py-3 text-text-muted">108 px</td></tr>
+                <tr><td class="font-mono px-4 py-3">lg</td><td class="font-mono px-4 py-3">0.15</td><td class="font-mono px-4 py-3 text-text-muted">162 px</td></tr>
+                <tr><td class="font-mono px-4 py-3">xl</td><td class="font-mono px-4 py-3">0.20</td><td class="font-mono px-4 py-3 text-text-muted">216 px</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <pre data-syntax="curl" class="bg-surface border border-border rounded-md p-5 font-mono text-sm overflow-x-auto mt-5"># pack the device flush against the preset edges
+curl -X POST 'https://bezel.fit/v1/devices/iphone-17-pro/frame?preset=ig-square&background=color:%230d1117&padding=none' \
+  --data-binary @screen.png --fail -o framed.png</pre>
+        </article>
+
+        <!-- body & limits -->
+        <article>
+          <p class="font-mono text-xs uppercase tracking-[0.18em] text-accent mb-3">body · request · required</p>
+          <h3 class="text-xl font-semibold tracking-[-0.01em] mb-2">Input PNG &amp; limits</h3>
+          <ul class="text-base text-text-muted space-y-2 max-w-3xl list-disc pl-5">
+            <li>Use the screenshot straight out of the simulator or emulator. The viewport sizes match what those tools output.</li>
+            <li>Body is raw PNG bytes: <span class="text-text">8-bit RGB or RGBA</span>, no palette / 16-bit / interlaced.</li>
+            <li>Width × height must equal the device viewport exactly. No scaling.</li>
+            <li>Max payload <span class="text-text">8 MiB</span>.</li>
+            <li>Rate limit: <span class="text-text">3 requests / 60 s</span> per source IP.</li>
+            <li>4xx errors return JSON with <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">{ error, message, … }</code>.
+              Codes: <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">unknown_device</code>,
+              <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">unsupported_finish</code>,
+              <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">not_png</code>,
+              <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">unsupported_png_format</code>,
+              <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">corrupt_png</code>,
+              <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">dimension_mismatch</code>,
+              <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">invalid_background</code>,
+              <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">invalid_preset</code>,
+              <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">invalid_corner_radius</code>,
+              <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">invalid_padding</code>,
+              <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">payload_too_large</code>,
+              <code class="bg-surface text-text font-mono text-xs px-1.5 py-0.5 rounded-sm">rate_limited</code>.
+            </li>
+          </ul>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ========== Examples ========== -->
+    <section id="examples" class="mb-32 scroll-mt-12">
+      <p class="font-mono text-xs uppercase tracking-[0.08em] text-text-muted mb-3">03 — Examples</p>
+      <h2 class="text-3xl font-semibold tracking-[-0.02em] mb-2">Recipes</h2>
+      <p class="text-base text-text-muted mb-10 max-w-3xl">
+        Click any card to load its configuration into the builder above.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <a href="#build" data-example='{"deviceId":"iphone-17-pro","finish":"silver","background":{"kind":"transparent"}}'
+           class="group bg-surface border border-border rounded-md p-5 hover:border-border-strong hover:shadow-raised transition cursor-pointer">
+          <div class="h-[28rem] mb-4 rounded-sm overflow-hidden p-6 flex items-center justify-center
+                      bg-[linear-gradient(45deg,#2a2d33_25%,transparent_25%),linear-gradient(-45deg,#2a2d33_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#2a2d33_75%),linear-gradient(-45deg,transparent_75%,#2a2d33_75%)]
+                      bg-[length:24px_24px] bg-[position:0_0,0_12px,12px_-12px,-12px_0px]">
+            <img src="/examples/iphone-17-pro-transparent.webp" alt="iPhone 17 Pro silver, transparent"
+                 loading="lazy" class="max-w-full max-h-full" />
+          </div>
+          <p class="font-mono text-xs uppercase tracking-[0.08em] text-accent mb-2">iPhone 17 Pro · silver</p>
+          <p class="font-mono text-xs text-text-muted">background=transparent</p>
+        </a>
+
+        <a href="#build" data-example='{"deviceId":"pixel-10-pro","background":{"kind":"linear","a":"#6a11cb","b":"#2575fc","deg":135},"preset":"ig-portrait"}'
+           class="group bg-surface border border-border rounded-md p-5 hover:border-border-strong hover:shadow-raised transition cursor-pointer">
+          <div class="h-[28rem] mb-4 rounded-sm overflow-hidden bg-bg p-6 flex items-center justify-center">
+            <img src="/examples/pixel-10-pro-portrait.webp" alt="Pixel 10 Pro on ig-portrait canvas"
+                 loading="lazy" class="max-w-full max-h-full" />
+          </div>
+          <p class="font-mono text-xs uppercase tracking-[0.08em] text-accent mb-2">Pixel 10 Pro</p>
+          <p class="font-mono text-xs text-text-muted">preset=ig-portrait · linear:#6a11cb,#2575fc,135deg</p>
+        </a>
+
+        <a href="#build" data-example='{"deviceId":"pixel-10-pro-xl","background":{"kind":"color","hex":"#0d1117"},"preset":"og-image","cornerRadius":"md"}'
+           class="group bg-surface border border-border rounded-md p-5 hover:border-border-strong hover:shadow-raised transition cursor-pointer">
+          <div class="h-[28rem] mb-4 rounded-sm overflow-hidden bg-bg p-6 flex items-center justify-center">
+            <img src="/examples/pixel-10-pro-xl-og.webp" alt="Pixel 10 Pro XL on og-image canvas"
+                 loading="lazy" class="max-w-full max-h-full" />
+          </div>
+          <p class="font-mono text-xs uppercase tracking-[0.08em] text-accent mb-2">Pixel 10 Pro XL</p>
+          <p class="font-mono text-xs text-text-muted">preset=og-image · color:#0d1117 · cornerRadius=md</p>
+        </a>
+
+        <a href="#build" data-example='{"deviceId":"pixel-10","background":{"kind":"linear","a":"#000000","b":"#ffffff","deg":180},"preset":"ig-square"}'
+           class="group bg-surface border border-border rounded-md p-5 hover:border-border-strong hover:shadow-raised transition cursor-pointer">
+          <div class="h-[28rem] mb-4 rounded-sm overflow-hidden bg-bg p-6 flex items-center justify-center">
+            <img src="/examples/pixel-10-square.webp" alt="Pixel 10 on ig-square canvas"
+                 loading="lazy" class="max-w-full max-h-full" />
+          </div>
+          <p class="font-mono text-xs uppercase tracking-[0.08em] text-accent mb-2">Pixel 10</p>
+          <p class="font-mono text-xs text-text-muted">preset=ig-square · linear:#000000,#ffffff</p>
+        </a>
+
+        <a href="#build" data-example='{"deviceId":"iphone-air","finish":"sky-blue","background":{"kind":"linear","a":"#7dd3fc","b":"#0369a1","deg":180},"preset":"ig-story","cornerRadius":"lg"}'
+           class="group bg-surface border border-border rounded-md p-5 hover:border-border-strong hover:shadow-raised transition cursor-pointer">
+          <div class="h-[28rem] mb-4 rounded-sm overflow-hidden bg-bg p-6 flex items-center justify-center">
+            <img src="/examples/iphone-air-sky-story.webp" alt="iPhone Air sky-blue on ig-story canvas"
+                 loading="lazy" class="max-w-full max-h-full" />
+          </div>
+          <p class="font-mono text-xs uppercase tracking-[0.08em] text-accent mb-2">iPhone Air · sky-blue</p>
+          <p class="font-mono text-xs text-text-muted">preset=ig-story · linear:#7dd3fc,#0369a1 · cornerRadius=lg</p>
+        </a>
+
+        <a href="#build" data-example='{"deviceId":"iphone-17","finish":"lavender","background":{"kind":"linear","a":"#e9d5ff","b":"#c084fc","deg":135},"preset":"ig-square"}'
+           class="group bg-surface border border-border rounded-md p-5 hover:border-border-strong hover:shadow-raised transition cursor-pointer">
+          <div class="h-[28rem] mb-4 rounded-sm overflow-hidden bg-bg p-6 flex items-center justify-center">
+            <img src="/examples/iphone-17-lavender-square.webp" alt="iPhone 17 lavender on ig-square canvas"
+                 loading="lazy" class="max-w-full max-h-full" />
+          </div>
+          <p class="font-mono text-xs uppercase tracking-[0.08em] text-accent mb-2">iPhone 17 · lavender</p>
+          <p class="font-mono text-xs text-text-muted">preset=ig-square · linear:#e9d5ff,#c084fc,135deg</p>
+        </a>
+
+        <a href="#build" data-example='{"deviceId":"iphone-17-pro-max","finish":"cosmic-orange","background":{"kind":"linear","a":"#ff7a18","b":"#af002d","deg":135},"preset":"og-image","cornerRadius":"md"}'
+           class="group bg-surface border border-border rounded-md p-5 hover:border-border-strong hover:shadow-raised transition cursor-pointer">
+          <div class="h-[28rem] mb-4 rounded-sm overflow-hidden bg-bg p-6 flex items-center justify-center">
+            <img src="/examples/iphone-17-pro-max-og.webp" alt="iPhone 17 Pro Max cosmic-orange on og-image canvas"
+                 loading="lazy" class="max-w-full max-h-full" />
+          </div>
+          <p class="font-mono text-xs uppercase tracking-[0.08em] text-accent mb-2">iPhone 17 Pro Max · cosmic-orange</p>
+          <p class="font-mono text-xs text-text-muted">preset=og-image · linear:#ff7a18,#af002d,135deg · cornerRadius=md</p>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- ========== Feedback ========== -->
+    <section id="feedback" class="mb-32 scroll-mt-12">
+      <p class="font-mono text-xs uppercase tracking-[0.08em] text-text-muted mb-3">04 — Feedback</p>
+      <h2 class="text-3xl font-semibold tracking-[-0.02em] mb-2">Tell me what's missing</h2>
+      <p class="text-base text-text-muted max-w-3xl">
+        Bug, missing device, half-formed idea, or just a hello —
+        <a href="mailto:hello@bezel.fit"
+           class="text-text underline decoration-text-faint hover:decoration-accent decoration-2 underline-offset-2 transition">hello@bezel.fit</a>.
+        One person on the other end, so replies aren't instant, but they're real.
+      </p>
+    </section>
+
+  </main>
+
+  <footer class="mx-auto max-w-5xl px-6 pb-16 border-t border-border pt-8">
+    <p class="font-mono text-xs text-text-muted flex flex-wrap items-center gap-x-4 gap-y-2">
+      <span>
+        Made by <a href="https://github.com/jadlr" target="_blank" rel="noopener noreferrer" class="text-text hover:text-accent transition">@jadlr</a>
+      </span>
+      <span class="text-text-faint">·</span>
+      <a href="/faq" class="hover:text-accent transition">faq</a>
+      <a href="/privacy" class="hover:text-accent transition">privacy</a>
+      <a href="/terms" class="hover:text-accent transition">terms</a>
+      <a href="/imprint" class="hover:text-accent transition">imprint</a>
+    </p>
+  </footer>
+
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"53ab1970aa464a9592bfa0b8d300cdb2","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

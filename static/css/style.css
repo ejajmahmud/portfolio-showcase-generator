@@ -185,6 +185,37 @@ body {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
+.styled-select {
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: #fff;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.styled-select:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.auto-list-row {
+  margin-top: -6px;
+}
+
+.results-meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
 /* Options Drawer */
 .options-accordion {
   border: 1px solid var(--border);

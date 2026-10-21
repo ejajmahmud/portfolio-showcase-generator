@@ -14,6 +14,8 @@ def generate_portfolio_assets(
     url,
     output_dir,
     project_name=None,
+    category=None,
+    website_type=None,
     mobile_finish="deep-blue",
     tablet_finish="space-black",
     bg_color="#E5E5E5",
@@ -72,6 +74,13 @@ def generate_portfolio_assets(
     if progress_callback:
         progress_callback("exporting", "Exporting WebP, PNG, JPG, and ZIP bundle...")
         
+    meta_info = {
+        "title": name,
+        "slug": slug,
+        "url": url,
+        "category": category or "",
+        "type": website_type or ""
+    }
     exports = export_all_formats(
         showcase_img=showcase_img,
         framed_mobile_img=framed_mob,
@@ -79,7 +88,8 @@ def generate_portfolio_assets(
         desktop_img=raw_desk,
         output_dir=output_dir,
         base_name=slug,
-        bg_for_jpg=(229, 229, 229)
+        bg_for_jpg=(229, 229, 229),
+        metadata=meta_info
     )
     
     if progress_callback:
@@ -89,6 +99,8 @@ def generate_portfolio_assets(
         "title": name,
         "slug": slug,
         "url": url,
+        "category": category or "",
+        "type": website_type or "",
         "exports": exports,
         "output_dir": output_dir
     }

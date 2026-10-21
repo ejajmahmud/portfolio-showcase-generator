@@ -41,6 +41,8 @@ templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 class GenerateRequest(BaseModel):
     url: str
     name: Optional[str] = None
+    category: Optional[str] = None
+    type: Optional[str] = None
     mobile_finish: Optional[str] = "deep-blue"
     tablet_finish: Optional[str] = "space-black"
     bg_color: Optional[str] = "#E5E5E5"
@@ -91,6 +93,8 @@ async def generate_showcase(req: GenerateRequest):
             url=url,
             output_dir=project_dir,
             project_name=req.name,
+            category=req.category,
+            website_type=req.type,
             mobile_finish=req.mobile_finish or "deep-blue",
             tablet_finish=req.tablet_finish or "space-black",
             bg_color=req.bg_color or "#E5E5E5",
@@ -110,6 +114,8 @@ async def generate_showcase(req: GenerateRequest):
             "title": result["title"],
             "slug": result["slug"],
             "url": url,
+            "category": result.get("category", ""),
+            "type": result.get("type", ""),
             "mobile_finish": req.mobile_finish,
             "exports": relative_exports,
             "created_at": None
@@ -121,6 +127,8 @@ async def generate_showcase(req: GenerateRequest):
             "title": result["title"],
             "slug": result["slug"],
             "url": url,
+            "category": result.get("category", ""),
+            "type": result.get("type", ""),
             "exports": relative_exports
         }
     except Exception as e:

@@ -1,5 +1,7 @@
 import os
+import json
 import zipfile
+from datetime import datetime
 from PIL import Image
 
 def export_image(pil_image, output_path, format_type='png', quality=95, bg_for_jpg=(229, 229, 229)):
@@ -33,11 +35,12 @@ def export_all_formats(
     desktop_img,
     output_dir,
     base_name="showcase",
-    bg_for_jpg=(229, 229, 229)
+    bg_for_jpg=(229, 229, 229),
+    metadata=None
 ):
     """
     Exports WebP, PNG, JPG for the showcase AND individual devices,
-    and bundles them into a ZIP archive.
+    generates auto-listing metadata JSON, and bundles them into a ZIP archive.
     """
     os.makedirs(output_dir, exist_ok=True)
     created_files = {}
@@ -88,8 +91,32 @@ def export_all_formats(
     created_files["desktop_png"] = desk_png
     created_files["desktop_webp"] = desk_webp
     created_files["desktop_jpg"] = desk_jpg
+
+    # 3. Save listing metadata JSON for auto-posting to Shinjiru Portfolio
+    if metadata:
+        meta_payload = {
+            "title": metadata.get("title", base_name),
+            "slug": metadata.get("slug", base_name),
+            "url": metadata.get("url", ""),
+            "category": metadata.get("category", ""),
+            "type": metadata.get("type", ""),
+            "generated_at": datetime.now().isoformat(),
+            "target_platform": "Shinjiru Web Design Portfolio",
+            "files": {
+                "showcase_webp": os.path.basename(showcase_webp),
+                "showcase_png": os.path.basename(showcase_png),
+                "showcase_jpg": os.path.basename(showcase_jpg),
+                "mobile_webp": os.path.basename(mob_webp),
+                "tablet_webp": os.path.basename(tab_webp),
+                "desktop_webp": os.path.basename(desk_webp)
+            }
+        }
+        meta_json_path = os.path.join(output_dir, f"{base_name}-metadata.json")
+        with open(meta_json_path, 'w', encoding='utf-8') as f:
+            json.dump(meta_payload, f, indent=2)
+        created_files["metadata_json"] = meta_json_path
     
-    # 3. Create ZIP bundle
+    # 4. Create ZIP bundle
     zip_path = os.path.join(output_dir, f"{base_name}-all-assets.zip")
     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for key, filepath in created_files.items():

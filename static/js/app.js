@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('generator-form');
   const urlInput = document.getElementById('site-url');
   const nameInput = document.getElementById('project-name');
+  const categorySelect = document.getElementById('project-category');
+  const typeSelect = document.getElementById('project-type');
   const mobileFinishSelect = document.getElementById('mobile-finish');
   const tabletFinishSelect = document.getElementById('tablet-finish');
   const bgColorSelect = document.getElementById('bg-color');
@@ -32,6 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const resultsCard = document.getElementById('results-card');
   const resultTitle = document.getElementById('result-title');
   const resultUrl = document.getElementById('result-url');
+  const resultCategoryBadge = document.getElementById('result-category-badge');
+  const resultTypeBadge = document.getElementById('result-type-badge');
   const previewStage = document.getElementById('preview-stage');
   const previewImage = document.getElementById('preview-image');
   const toggleBgBtn = document.getElementById('toggle-bg-btn');
@@ -132,6 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const payload = {
         url: rawUrl,
         name: nameInput.value.trim() || null,
+        category: categorySelect ? categorySelect.value : null,
+        type: typeSelect ? typeSelect.value : null,
         mobile_finish: mobileFinishSelect.value,
         tablet_finish: tabletFinishSelect.value,
         bg_color: bgColorSelect.value,
@@ -205,6 +211,21 @@ document.addEventListener('DOMContentLoaded', () => {
     resultTitle.textContent = data.title;
     resultUrl.textContent = data.url;
 
+    // Optional Shinjiru Category & Type badges
+    if (data.category && resultCategoryBadge) {
+      resultCategoryBadge.textContent = data.category;
+      resultCategoryBadge.classList.remove('hidden');
+    } else if (resultCategoryBadge) {
+      resultCategoryBadge.classList.add('hidden');
+    }
+
+    if (data.type && resultTypeBadge) {
+      resultTypeBadge.textContent = data.type;
+      resultTypeBadge.classList.remove('hidden');
+    } else if (resultTypeBadge) {
+      resultTypeBadge.classList.add('hidden');
+    }
+
     // Reset tabs to showcase
     tabBtns.forEach(b => b.classList.remove('active'));
     document.querySelector('.tab-btn[data-view="showcase"]').classList.add('active');
@@ -246,6 +267,12 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="history-meta">
             <div class="history-title">${item.title}</div>
             <div class="history-url">${item.url}</div>
+            ${(item.category || item.type) ? `
+              <div class="history-tags" style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;">
+                ${item.category ? `<span class="badge-tag" style="font-size:10px;padding:2px 8px;">${item.category}</span>` : ''}
+                ${item.type ? `<span class="badge-tag accent" style="font-size:10px;padding:2px 8px;">${item.type}</span>` : ''}
+              </div>
+            ` : ''}
           </div>
         </div>
       `).join('');

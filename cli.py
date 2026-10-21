@@ -9,6 +9,8 @@ def main():
     )
     parser.add_argument("url", help="Target website URL (e.g. https://example.com)")
     parser.add_argument("--name", "-n", default=None, help="Project name (defaults to page title)")
+    parser.add_argument("--category", "-c", default=None, help="Shinjiru portfolio category (e.g. Technology & Apps)")
+    parser.add_argument("--type", "-t", default=None, choices=["Business", "E-commerce"], help="Website type (Business or E-commerce)")
     parser.add_argument("--finish", "-f", default="deep-blue", choices=["deep-blue", "silver", "cosmic-orange"],
                         help="iPhone 17 Pro Max finish (default: deep-blue)")
     parser.add_argument("--tablet", "-t", default="space-black", choices=["space-black", "silver"],
@@ -36,6 +38,8 @@ def main():
             url=args.url,
             output_dir=args.out,
             project_name=args.name,
+            category=args.category,
+            website_type=args.type,
             mobile_finish=args.finish,
             tablet_finish=args.tablet,
             bg_color=args.bg,
