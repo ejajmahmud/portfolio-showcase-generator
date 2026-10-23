@@ -1,34 +1,48 @@
+<p align="center">
+  <img src="static/img/og_thumbnail.png" alt="Portfolio Showcase Studio Banner" width="100%">
+</p>
+
 # Portfolio Showcase Studio — Multi-Device Asset Pipeline
 
-> Fully automated website portfolio showcase generator delivering high-resolution multi-device compositions (Desktop, Smartphone, Tablet) with realistic 3D elevation drop shadows. Exports to WebP, PNG, JPG, and bundled ZIP packages.
+<p align="center">
+  <a href="https://portfolio.six.my"><img src="https://img.shields.io/badge/Live_Studio-portfolio.six.my-0071e3?style=for-the-badge&logo=safari&logoColor=white" alt="Live Demo"></a>
+  <a href="https://portfolio.six.my/guide"><img src="https://img.shields.io/badge/User_Guide-PDF_%26_Docs-10b981?style=for-the-badge&logo=readme&logoColor=white" alt="Documentation"></a>
+  <img src="https://img.shields.io/badge/Version-2.4.0_Production-blueviolet?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Engine-Playwright_Stealth-orange?style=for-the-badge" alt="Engine">
+</p>
+
+> Fully automated website portfolio showcase generator delivering studio-grade multi-device compositions (Desktop, iPad, and iPhone 17 Pro Max) with realistic 3D elevation drop shadows. Exports to WebP, PNG, JPG, and bundled ZIP packages.
 
 ---
 
 ## Key Features
 
-1. **One-Link Full Automation**: Provide any live website URL. The headless browser engine automatically captures the extended natural desktop viewport, responsive smartphone viewport, and tablet viewport with cookie consent banner dismissal and dynamic asset stabilization.
+1. **One-Link Full Automation**: Provide any live website URL. The stealth browser engine automatically captures the extended natural desktop viewport, responsive smartphone viewport, and tablet viewport with automated cookie banner and splash gate dismissal.
 2. **High-Resolution Device Framing**:
-   - **Smartphone**: Precision-crafted titanium frame with true screen aspect ratio, curvature, and island cutout.
-   - **Tablet**: Modern minimal-bezel frame in Space Black or Silver finishes.
+   - **iPhone 17 Pro Max**: Precision titanium chassis in 4 finishes (Deep Blue, Natural Titanium, Black, White) with true screen curvature and Dynamic Island.
+   - **iPad Tablet**: Modern minimal-bezel frame in Space Black or Silver finishes.
    - **Extended Desktop**: 5:6 vertical hero card preserving natural page layout without stretching or horizontal cropping.
 3. **Agency 3D Multi-Device Composition**:
    - Elevated desktop canvas in the background with subtle perimeter stroke.
    - Smartphone positioned bottom-left overhanging the baseline.
    - Tablet positioned bottom-right overhanging the baseline.
    - Dual-tier elevation contact and ambient drop shadows.
-   - Default canvas background set to standard `#E5E5E5`.
-4. **Portfolio Taxonomy & Metadata**:
+   - 1-Click Transparent PNG mode or standard `#E5E5E5` canvas background.
+4. **Smart Modal & Splash Gate Dismissal**:
+   - Automated bypass of cookie consent banners (OneTrust, Cookiebot, etc.), commercial promotional dialogs, and Elementor "Enter Site" / intro splash screens.
+5. **Portfolio Taxonomy & Metadata**:
    - Industry category classification (22 options matching standard agency taxonomy).
    - Website type designation (`Business`, `E-commerce`).
    - Automated export of `{project}-metadata.json` for automated CMS ingestion and listing.
-5. **Multi-Format High-Resolution Exports**:
+6. **Multi-Format High-Resolution Exports**:
    - **WebP**: 95% quality web-optimized standard.
    - **PNG**: Lossless alpha channel transparency.
    - **JPG**: Universal 95% quality RGB.
    - Individual device captures + bundled ZIP package.
-6. **Production UI Experience**:
-   - **Theme Engine**: High-contrast Light and Dark themes compliant with WCAG AAA/AA standards.
-   - **Recent Project Gallery**: Client-side instant live search across titles, URLs, and categories, paired with clean pagination.
+7. **Production UI Experience**:
+   - **Apple Liquid Glass Interface**: Authentic macOS Light and Dark grain gradient themes compliant with WCAG AAA/AA standards.
+   - **Official User Guide & Documentation**: Built-in interactive PDF viewer at `/guide`.
+   - **Role-Based Access**: Multi-tier authentication with instant 1-Click Guest access.
 
 ---
 
