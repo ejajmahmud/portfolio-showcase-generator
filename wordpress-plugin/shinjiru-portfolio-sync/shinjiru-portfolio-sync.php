@@ -41,6 +41,67 @@ class Shinjiru_Portfolio_Sync {
 
         // Initialize default secret token if not set (using native PHP random_bytes)
         add_action('init', array($this, 'ensure_default_token'));
+
+        // Filter REST CORS allowed headers to explicitly allow custom sync headers and Authorization
+        add_filter('rest_allowed_cors_headers', array($this, 'filter_rest_cors_headers'), 20);
+
+        // Pre-serve CORS headers filter for WordPress REST API
+        add_filter('rest_pre_serve_request', array($this, 'handle_rest_pre_serve_cors'), 10, 4);
+
+        // Handle early OPTIONS preflight requests for our endpoints
+        add_action('init', array($this, 'handle_early_cors_preflight'), 5);
+    }
+
+    /**
+     * Filter REST CORS allowed headers
+     */
+    public function filter_rest_cors_headers($headers) {
+        if (!is_array($headers)) {
+            $headers = array();
+        }
+        $headers[] = 'X-Shinjiru-Sync-Token';
+        $headers[] = 'x-shinjiru-sync-token';
+        $headers[] = 'Authorization';
+        $headers[] = 'Content-Type';
+        $headers[] = 'sync_token';
+        return array_unique($headers);
+    }
+
+    /**
+     * Pre-serve CORS headers for REST API requests
+     */
+    public function handle_rest_pre_serve_cors($served, $result, $request, $server) {
+        $origin = get_http_origin();
+        if ($origin) {
+            header('Access-Control-Allow-Origin: ' . $origin);
+            header('Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE');
+            header('Access-Control-Allow-Credentials: true');
+            header('Access-Control-Allow-Headers: Authorization, Content-Type, X-WP-Nonce, X-Shinjiru-Sync-Token, x-shinjiru-sync-token, sync_token');
+        }
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            status_header(200);
+            return true;
+        }
+        return $served;
+    }
+
+    /**
+     * Handle early OPTIONS preflight requests before WordPress routing
+     */
+    public function handle_early_cors_preflight() {
+        if (isset($_SERVER['HTTP_ORIGIN']) && (
+            (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/shinjiru-portfolio/') !== false) ||
+            (isset($_GET['rest_route']) && strpos($_GET['rest_route'], '/shinjiru-portfolio/') !== false)
+        )) {
+            header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+            header("Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE");
+            header("Access-Control-Allow-Credentials: true");
+            header("Access-Control-Allow-Headers: Authorization, Content-Type, X-WP-Nonce, X-Shinjiru-Sync-Token, x-shinjiru-sync-token, sync_token");
+            if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+                status_header(200);
+                exit();
+            }
+        }
     }
 
     /**
@@ -91,12 +152,33 @@ class Shinjiru_Portfolio_Sync {
             return new WP_Error('no_token_configured', 'Sync token is not configured in WordPress settings.', array('status' => 500));
         }
 
-        $header_token = $request->get_header('x-shinjiru-sync-token');
+        $header_token = '';
+
+        // 1. Check Authorization Bearer header
+        $auth_header = $request->get_header('authorization');
+        if ($auth_header && preg_match('/Bearer\s+(\S+)/i', $auth_header, $matches)) {
+            $header_token = $matches[1];
+        }
+
+        // 2. Check X-Shinjiru-Sync-Token header
         if (empty($header_token)) {
-            $auth_header = $request->get_header('authorization');
-            if ($auth_header && preg_match('/Bearer\s+(\S+)/i', $auth_header, $matches)) {
-                $header_token = $matches[1];
+            $header_token = $request->get_header('x-shinjiru-sync-token');
+        }
+
+        // 3. Check JSON body sync_token
+        if (empty($header_token)) {
+            $json_params = $request->get_json_params();
+            if (!empty($json_params['sync_token'])) {
+                $header_token = $json_params['sync_token'];
             }
+        }
+
+        // 4. Check request query / body params
+        if (empty($header_token)) {
+            $header_token = $request->get_param('sync_token');
+        }
+        if (empty($header_token) && isset($_REQUEST['sync_token'])) {
+            $header_token = $_REQUEST['sync_token'];
         }
 
         if (empty($header_token) || !hash_equals($token, trim($header_token))) {

@@ -886,6 +886,8 @@ async def approve_and_publish_endpoint(req: SyncPublishRequest, request: Request
     return {
         "success": True,
         "needs_client_sync": True,
+        "fallback_client_sync": True,
+        "direct_sync_endpoint": settings.get("sync_endpoint"),
         "sync_endpoint": settings.get("sync_endpoint"),
         "secret_token": settings.get("secret_token"),
         "portfolio_page_url": settings.get("portfolio_page_url"),
@@ -895,7 +897,8 @@ async def approve_and_publish_endpoint(req: SyncPublishRequest, request: Request
             "industry": industry,
             "website_type": website_type,
             "slug": slug,
-            "image_base64": b64_str
+            "image_base64": b64_str,
+            "sync_token": settings.get("secret_token")
         }
     }
 
@@ -963,10 +966,13 @@ async def rollback_sync_endpoint(req: SyncRollbackRequest, request: Request):
     return {
         "success": True,
         "needs_client_rollback": True,
+        "fallback_client_rollback": True,
+        "direct_rollback_endpoint": settings.get("rollback_endpoint"),
         "rollback_endpoint": settings.get("rollback_endpoint"),
         "secret_token": settings.get("secret_token"),
         "payload": {
-            "slug": slug
+            "slug": slug,
+            "sync_token": settings.get("secret_token")
         }
     }
 

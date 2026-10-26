@@ -203,10 +203,10 @@ def dismiss_popups_and_dialogs(page):
         document.body.classList.remove('modal-open', 'overflow-hidden', 'no-scroll', 'has-modal', 'dialog-prevent-scroll');
 
         const backdrops = document.querySelectorAll(
-            '.modal-backdrop, .dialog-backdrop, [class*="overlay" i][style*="position"], [class*="scrim" i], .dialog-widget, .elementor-popup-modal, [class*="popup-modal" i]'
+            '.modal-backdrop, .dialog-backdrop, [class*="scrim" i], .dialog-widget, .elementor-popup-modal, [class*="popup-modal" i]'
         );
         backdrops.forEach(b => {
-            if (b) {
+            if (b && !b.querySelector('nav, header, [role="navigation"], [class*="header" i], [class*="logo" i]')) {
                 b.style.setProperty('display', 'none', 'important');
                 b.style.setProperty('visibility', 'hidden', 'important');
                 b.style.setProperty('opacity', '0', 'important');
@@ -221,6 +221,8 @@ def dismiss_popups_and_dialogs(page):
 
 STEALTH_JS = """
 Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+window.outerWidth = 1440;
+window.outerHeight = 1728;
 """
 
 CHALLENGE_KEYWORDS = [
@@ -274,11 +276,33 @@ def wait_for_page_ready(page, max_wait=30, stabilization_delay=2.0, hide_banners
         except Exception:
             pass
 
-    # 4. Trigger lazy-loaded images by smooth scroll down the extended viewport
+    # 4. Trigger lazy-loaded images by scrolling through the viewport, then scroll back to top
+    try:
+        page.evaluate("""() => new Promise(resolve => {
+            let y = 0;
+            const step = 400;
+            const max = Math.min(document.body.scrollHeight || 2000, 2400);
+            const interval = setInterval(() => {
+                y += step;
+                window.scrollTo(0, y);
+                if (y >= max) {
+                    clearInterval(interval);
+                    window.scrollTo(0, 0);
+                    document.documentElement.scrollTop = 0;
+                    document.body.scrollTop = 0;
+                    setTimeout(resolve, 350);
+                }
+            }, 80);
+        })""")
+    except Exception:
+        pass
+
+    # Strictly enforce scroll is at (0, 0)
     try:
         page.evaluate("""() => {
-            window.scrollBy(0, 800);
-            setTimeout(() => window.scrollTo(0, 0), 200);
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
         }""")
     except Exception:
         pass
@@ -297,6 +321,16 @@ def wait_for_page_ready(page, max_wait=30, stabilization_delay=2.0, hide_banners
     # 5. Wait for web fonts
     try:
         page.evaluate("() => document.fonts.ready")
+    except Exception:
+        pass
+
+    # Final guarantee: scroll at 0 and wait for any sticky headers or CSS transitions to settle
+    try:
+        page.evaluate("""() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        }""")
     except Exception:
         pass
 
@@ -370,7 +404,16 @@ def capture_website(
             page_title = title_raw
             
         if progress_callback:
-            progress_callback("desktop_snap", "Capturing Desktop view (Retina 1440x1100 @2x)...")
+            progress_callback("desktop_snap", "Capturing Desktop view (Retina 1440x1728 @2x)...")
+        try:
+            page.evaluate("""() => {
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+            }""")
+            page.wait_for_timeout(400)
+        except Exception:
+            pass
         page.screenshot(path=desktop_path)
         
         # 2. Tablet View Capture (iPad: 810x1080 @2x -> 1620x2160)
@@ -379,6 +422,15 @@ def capture_website(
             
         page.set_viewport_size({"width": 810, "height": 1080})
         wait_for_page_ready(page, max_wait=10, stabilization_delay=1.0, hide_banners=hide_banners)
+        try:
+            page.evaluate("""() => {
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+            }""")
+            page.wait_for_timeout(300)
+        except Exception:
+            pass
         page.screenshot(path=tablet_path)
         
         # 3. Mobile View Capture (iPhone: 440x956 @2x -> resized to 1320x2868)
@@ -387,6 +439,15 @@ def capture_website(
             
         page.set_viewport_size({"width": 440, "height": 956})
         wait_for_page_ready(page, max_wait=10, stabilization_delay=1.0, hide_banners=hide_banners)
+        try:
+            page.evaluate("""() => {
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+            }""")
+            page.wait_for_timeout(300)
+        except Exception:
+            pass
         page.screenshot(path=mobile_path)
         
         browser.close()

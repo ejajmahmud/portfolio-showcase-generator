@@ -536,13 +536,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Dual-Path Resilient Architecture: If server-side was blocked by firewall, client browser executes direct sync
         if (data.needs_client_sync) {
+          const wpPayload = Object.assign({}, data.payload, { sync_token: data.secret_token });
           const wpRes = await fetch(data.sync_endpoint, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + data.secret_token,
               'X-Shinjiru-Sync-Token': data.secret_token
             },
-            body: JSON.stringify(data.payload)
+            body: JSON.stringify(wpPayload)
           });
           const wpData = await wpRes.json();
           if (!wpRes.ok || !wpData.success) {
@@ -653,13 +655,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Dual-Path Resilient Architecture: If server-side was blocked by firewall, client browser executes direct rollback
         if (data.needs_client_rollback) {
+          const wpPayload = Object.assign({}, data.payload, { sync_token: data.secret_token });
           const wpRes = await fetch(data.rollback_endpoint, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + data.secret_token,
               'X-Shinjiru-Sync-Token': data.secret_token
             },
-            body: JSON.stringify(data.payload)
+            body: JSON.stringify(wpPayload)
           });
           const wpData = await wpRes.json();
           if (!wpRes.ok || !wpData.success) {
