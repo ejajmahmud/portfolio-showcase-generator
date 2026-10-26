@@ -790,15 +790,14 @@ async def delete_history_showcase(slug: str, request: Request):
 # --- Shinjiru Portfolio Sync & Approval API ---
 @app.get("/api/sync/settings")
 async def get_sync_settings_endpoint(request: Request):
-    require_auth(request)
-    user = get_current_user_from_request(request)
+    user = require_role(["admin"])(request)
     settings = get_sync_settings()
     return {
         "success": True,
         "settings": settings,
         "industries": SHINJIRU_INDUSTRIES,
         "website_types": SHINJIRU_WEBSITE_TYPES,
-        "is_admin": user.get("role") == "admin"
+        "is_admin": True
     }
 
 @app.post("/api/sync/settings")
@@ -810,7 +809,7 @@ async def update_sync_settings_endpoint(req: SyncSettingsRequest, request: Reque
 
 @app.get("/api/sync/health")
 async def get_sync_health_endpoint(request: Request):
-    require_auth(request)
+    require_role(["admin"])(request)
     health = check_sync_health()
     return health
 
@@ -1013,8 +1012,9 @@ async def download_plugin_endpoint(request: Request):
     """
     Dynamically packages and delivers the official Shinjiru Portfolio Sync WordPress plugin (.zip).
     Ready for direct upload to shinjiru.com.my or any WordPress site.
+    Restricted to administrators only.
     """
-    require_auth(request)
+    require_role(["admin"])(request)
     zip_path = os.path.join(EXPORTS_DIR, "shinjiru-portfolio-sync.zip")
     plugin_src_dir = os.path.join(BASE_DIR, "wordpress-plugin", "shinjiru-portfolio-sync")
     if not os.path.exists(plugin_src_dir):

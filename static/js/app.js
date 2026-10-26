@@ -502,6 +502,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function openApproveSyncModal(item) {
+    if (!currentUser || currentUser.role !== 'admin') {
+      showToast('Access Denied: Only administrators can approve and upload showcases to Shinjiru.', 'error');
+      return;
+    }
     if (!approveSyncModal || !item) return;
     if (syncModalAlert) {
       syncModalAlert.className = 'modal-alert hidden';
@@ -700,6 +704,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Shinjiru Portfolio Rollback Alert Modal
   // --------------------------------------------------------------------------
   function openRollbackModal(item) {
+    if (!currentUser || currentUser.role !== 'admin') {
+      showToast('Access Denied: Only administrators can rollback showcases from Shinjiru.', 'error');
+      return;
+    }
     if (!confirmRollbackModal || !item) return;
     showcaseToRollback = item;
     if (rollbackProjectName) {
@@ -805,18 +813,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const liveUrl = data.synced_portfolio_page || 'https://wwwdev.shinjiru.com.my/web-design/web-design-portfolios/';
     const industryName = data.synced_industry || data.category || 'Business & Services';
 
-    // 1. Title Status Badge
+    // 1. Title Status Badge (Draft badge visible to Admin only)
     if (resultSyncStatusBadge) {
-      if (isSynced) {
-        resultSyncStatusBadge.className = 'badge-tag sync-live';
-        resultSyncStatusBadge.textContent = '● Live on Shinjiru';
+      if (isAdmin) {
+        resultSyncStatusBadge.classList.remove('hidden');
+        if (isSynced) {
+          resultSyncStatusBadge.className = 'badge-tag sync-live';
+          resultSyncStatusBadge.textContent = '● Live on Shinjiru';
+        } else {
+          resultSyncStatusBadge.className = 'badge-tag sync-draft';
+          resultSyncStatusBadge.textContent = 'Draft';
+        }
       } else {
-        resultSyncStatusBadge.className = 'badge-tag sync-draft';
-        resultSyncStatusBadge.textContent = 'Draft';
+        // Non-admin (creator, guest, viewer)
+        if (isSynced) {
+          resultSyncStatusBadge.classList.remove('hidden');
+          resultSyncStatusBadge.className = 'badge-tag sync-live';
+          resultSyncStatusBadge.textContent = '● Live on Shinjiru';
+        } else {
+          resultSyncStatusBadge.classList.add('hidden');
+        }
       }
     }
 
-    // 2. Header Quick Actions
+    // 2. Header Quick Actions (Approve & Upload / Rollback are strictly Admin only)
     if (resultHeaderSyncActions) {
       if (isAdmin) {
         resultHeaderSyncActions.classList.remove('hidden');
@@ -836,60 +856,65 @@ document.addEventListener('DOMContentLoaded', () => {
           if (btnHeaderRollbackSync) btnHeaderRollbackSync.classList.add('hidden');
         }
       } else {
-        // Non-admin (Guest/Viewer)
+        // Non-admin (creator, guest, viewer): Never see Approve & Upload or Rollback
+        if (btnHeaderApproveSync) btnHeaderApproveSync.classList.add('hidden');
+        if (btnHeaderRollbackSync) btnHeaderRollbackSync.classList.add('hidden');
+
         if (isSynced && btnHeaderViewLive) {
           resultHeaderSyncActions.classList.remove('hidden');
-          if (btnHeaderApproveSync) btnHeaderApproveSync.classList.add('hidden');
           btnHeaderViewLive.classList.remove('hidden');
           btnHeaderViewLive.href = liveUrl;
-          if (btnHeaderRollbackSync) btnHeaderRollbackSync.classList.add('hidden');
         } else {
           resultHeaderSyncActions.classList.add('hidden');
+          if (btnHeaderViewLive) btnHeaderViewLive.classList.add('hidden');
         }
       }
     }
 
-    // 3. Download Section Deployment Card
+    // 3. Download Section Header & Deployment Card (Strictly Admin only)
+    const downloadTitleEl = document.getElementById('download-section-title');
+    if (downloadTitleEl) {
+      downloadTitleEl.textContent = isAdmin ? 'Download Formats & Live Deployment' : 'Download Formats';
+    }
+
     if (dlSyncCard) {
-      if (isSynced) {
-        if (dlSyncCardStatus) {
-          dlSyncCardStatus.className = 'sync-card-status live';
-          dlSyncCardStatus.textContent = 'Live';
-        }
-        if (dlSyncCardDesc) {
-          dlSyncCardDesc.textContent = `Live on Shinjiru Portfolio • ${escapeHtml(industryName)}`;
-        }
-        if (btnCardApproveSync) btnCardApproveSync.classList.add('hidden');
-        if (btnCardViewLive) {
-          btnCardViewLive.classList.remove('hidden');
-          btnCardViewLive.href = liveUrl;
-        }
-        if (btnCardRollbackSync) {
-          if (isAdmin) {
-            btnCardRollbackSync.classList.remove('hidden');
-          } else {
-            btnCardRollbackSync.classList.add('hidden');
-          }
-        }
+      if (!isAdmin) {
+        // Non-admin: Completely hide live deployment card
+        dlSyncCard.classList.add('hidden');
       } else {
-        // Draft
-        if (dlSyncCardStatus) {
-          dlSyncCardStatus.className = 'sync-card-status draft';
-          dlSyncCardStatus.textContent = 'Draft';
-        }
-        if (dlSyncCardDesc) {
-          dlSyncCardDesc.textContent = 'Publish this showcase directly to Shinjiru Portfolio';
-        }
-        if (isAdmin) {
+        dlSyncCard.classList.remove('hidden');
+        if (isSynced) {
+          if (dlSyncCardStatus) {
+            dlSyncCardStatus.className = 'sync-card-status live';
+            dlSyncCardStatus.textContent = 'Live';
+          }
+          if (dlSyncCardDesc) {
+            dlSyncCardDesc.textContent = `Live on Shinjiru Portfolio • ${escapeHtml(industryName)}`;
+          }
+          if (btnCardApproveSync) btnCardApproveSync.classList.add('hidden');
+          if (btnCardViewLive) {
+            btnCardViewLive.classList.remove('hidden');
+            btnCardViewLive.href = liveUrl;
+          }
+          if (btnCardRollbackSync) {
+            btnCardRollbackSync.classList.remove('hidden');
+          }
+        } else {
+          // Draft
+          if (dlSyncCardStatus) {
+            dlSyncCardStatus.className = 'sync-card-status draft';
+            dlSyncCardStatus.textContent = 'Draft';
+          }
+          if (dlSyncCardDesc) {
+            dlSyncCardDesc.textContent = 'Publish this showcase directly to Shinjiru Portfolio';
+          }
           if (btnCardApproveSync) {
             btnCardApproveSync.classList.remove('hidden');
             btnCardApproveSync.disabled = false;
           }
-        } else {
-          if (btnCardApproveSync) btnCardApproveSync.classList.add('hidden');
+          if (btnCardViewLive) btnCardViewLive.classList.add('hidden');
+          if (btnCardRollbackSync) btnCardRollbackSync.classList.add('hidden');
         }
-        if (btnCardViewLive) btnCardViewLive.classList.add('hidden');
-        if (btnCardRollbackSync) btnCardRollbackSync.classList.add('hidden');
       }
     }
   }
@@ -1121,12 +1146,15 @@ document.addEventListener('DOMContentLoaded', () => {
       drawerBadge.className = `drawer-user-role role-badge role-${user.role}`;
     }
 
+    const tabBtnSyncSettings = document.getElementById('tab-btn-sync-settings');
     if (user.role === 'admin') {
       if (manageUsersBtn) manageUsersBtn.classList.remove('hidden');
       if (drawerManageBtn) drawerManageBtn.classList.remove('hidden');
+      if (tabBtnSyncSettings) tabBtnSyncSettings.classList.remove('hidden');
     } else {
       if (manageUsersBtn) manageUsersBtn.classList.add('hidden');
       if (drawerManageBtn) drawerManageBtn.classList.add('hidden');
+      if (tabBtnSyncSettings) tabBtnSyncSettings.classList.add('hidden');
     }
 
     if (user.role === 'viewer') {
@@ -2152,9 +2180,13 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="history-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</div>
           <div class="history-url" title="${escapeHtml(item.url)}">${escapeHtml(item.url)}</div>
           <div class="history-tags">
-            ${isSynced 
-              ? `<span class="badge-tag sync-live" title="Live on Shinjiru Web Design Portfolio">● Live on Shinjiru</span>` 
-              : `<span class="badge-tag sync-draft" title="Draft (Not uploaded to Shinjiru)">Draft</span>`}
+            ${isAdmin 
+              ? (isSynced 
+                  ? `<span class="badge-tag sync-live" title="Live on Shinjiru Web Design Portfolio">● Live on Shinjiru</span>` 
+                  : `<span class="badge-tag sync-draft" title="Draft (Not uploaded to Shinjiru)">Draft</span>`)
+              : (isSynced 
+                  ? `<span class="badge-tag sync-live" title="Live on Shinjiru Web Design Portfolio">● Live on Shinjiru</span>` 
+                  : '')}
             ${(item.category || item.synced_industry) ? `<span class="badge-tag">${escapeHtml(item.category || item.synced_industry)}</span>` : ''}
             ${(item.type || item.synced_type) ? `<span class="badge-tag accent">${escapeHtml(item.type || item.synced_type)}</span>` : ''}
           </div>

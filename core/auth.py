@@ -37,6 +37,7 @@ ROLE_PERMISSIONS = {
         "can_view_history": True,
         "can_delete_history": True,
         "can_manage_users": True,
+        "can_approve_sync": True,
         "description": "Full administrative control, user management, and showcase generation."
     },
     "creator": {
@@ -45,6 +46,7 @@ ROLE_PERMISSIONS = {
         "can_view_history": True,
         "can_delete_history": False,
         "can_manage_users": False,
+        "can_approve_sync": False,
         "description": "Can generate multi-device showcases, browse gallery, and download assets."
     },
     "guest": {
@@ -53,6 +55,7 @@ ROLE_PERMISSIONS = {
         "can_view_history": True,
         "can_delete_history": False,
         "can_manage_users": False,
+        "can_approve_sync": False,
         "description": "Guest access: can create showcases, browse gallery, and download assets, but cannot delete or edit."
     },
     "viewer": {
@@ -61,6 +64,7 @@ ROLE_PERMISSIONS = {
         "can_view_history": True,
         "can_delete_history": False,
         "can_manage_users": False,
+        "can_approve_sync": False,
         "description": "Read-only access to browse showcases, view device mockups, and download assets."
     }
 }

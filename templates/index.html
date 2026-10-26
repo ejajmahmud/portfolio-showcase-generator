@@ -27,7 +27,7 @@
   <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
   <link rel="alternate icon" href="/static/img/favicon.ico">
   <link rel="apple-touch-icon" href="/static/img/favicon.png">
-  <link rel="stylesheet" href="/static/css/style.css?v=3.0.0">
+  <link rel="stylesheet" href="/static/css/style.css?v=3.1.0">
 </head>
 <body>
   <!-- Ambient Liquid Canvas & Dark Grain Gradient Backdrop -->
@@ -463,7 +463,7 @@
           <div class="results-info">
             <div class="results-title-line">
               <h2 id="result-title">Project Showcase</h2>
-              <span id="result-sync-status-badge" class="badge-tag sync-draft">Draft</span>
+              <span id="result-sync-status-badge" class="badge-tag sync-draft hidden">Draft</span>
             </div>
             <div class="results-meta-row">
               <a id="result-url" class="result-url" href="#" target="_blank" rel="noopener">https://example.com</a>
@@ -482,7 +482,7 @@
             </div>
 
             <!-- Header Quick Sync Action (Admin only) -->
-            <div id="result-header-sync-actions" class="result-header-sync-actions">
+            <div id="result-header-sync-actions" class="result-header-sync-actions hidden">
               <button type="button" id="btn-header-approve-sync" class="btn-apple-primary btn-sync-approve">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="14" height="14">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -528,11 +528,11 @@
         <!-- Download & Deployment Action Center -->
         <div class="download-section">
           <div class="download-header-row">
-            <div class="download-title">Download Formats & Live Deployment</div>
+            <div class="download-title" id="download-section-title">Download Formats & Live Deployment</div>
           </div>
           <div class="download-buttons">
-            <!-- 1. Live Deployment Card -->
-            <div id="dl-sync-card" class="dl-btn dl-sync-card highlight">
+            <!-- 1. Live Deployment Card (Admin Only) -->
+            <div id="dl-sync-card" class="dl-btn dl-sync-card highlight hidden">
               <div class="dl-sync-top">
                 <span class="dl-badge sync-card-badge">LIVE DEPLOYMENT</span>
                 <span id="dl-sync-card-status" class="sync-card-status draft">Draft</span>
@@ -654,7 +654,7 @@
       <div class="modal-tabs">
         <button type="button" class="modal-tab-btn active" data-tab="tab-user-list">User Accounts</button>
         <button type="button" class="modal-tab-btn" data-tab="tab-create-user">+ Add User</button>
-        <button type="button" class="modal-tab-btn" data-tab="tab-sync-settings">Portfolio Sync</button>
+        <button type="button" class="modal-tab-btn" data-tab="tab-sync-settings" id="tab-btn-sync-settings">Portfolio Sync</button>
       </div>
 
       <div class="modal-body">
@@ -1120,6 +1120,6 @@
   <!-- Floating Liquid Glass Toast Notifications -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
-  <script src="/static/js/app.js?v=3.0.0"></script>
+  <script src="/static/js/app.js?v=3.1.0"></script>
 </body>
 </html>
