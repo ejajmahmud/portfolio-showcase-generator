@@ -504,6 +504,45 @@
           </div>
         </div>
 
+        <!-- Admin Shinjiru Sync & Deployment Action Banner -->
+        <div id="result-sync-banner" class="result-sync-banner">
+          <div class="sync-banner-content">
+            <div class="sync-banner-badge" id="result-sync-badge">
+              <span class="sync-dot draft"></span>
+              <span id="result-sync-status-text">Draft (Not Synced)</span>
+            </div>
+            <div class="sync-banner-info">
+              <h4>Shinjiru Live Portfolio Sync</h4>
+              <p id="result-sync-desc">Deploy this multi-device showcase directly to Shinjiru's live Web Design Portfolio page.</p>
+            </div>
+          </div>
+          <div class="sync-banner-actions">
+            <button type="button" id="btn-result-approve-sync" class="btn-sync-action btn-sync-primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Approve & Upload to Shinjiru</span>
+            </button>
+            <button type="button" id="btn-result-rollback-sync" class="btn-sync-action btn-sync-rollback hidden">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              </svg>
+              <span>Rollback from Shinjiru</span>
+            </button>
+            <a id="btn-result-view-live" href="https://wwwdev.shinjiru.com.my/web-design/web-design-portfolios/" target="_blank" rel="noopener noreferrer" class="btn-sync-action btn-sync-secondary hidden">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+              <span>View on Shinjiru</span>
+            </a>
+          </div>
+        </div>
+
         <!-- Download Action Center -->
         <div class="download-section">
           <div class="download-title">Download Formats</div>
@@ -597,6 +636,7 @@
       <div class="modal-tabs">
         <button type="button" class="modal-tab-btn active" data-tab="tab-user-list">User Accounts</button>
         <button type="button" class="modal-tab-btn" data-tab="tab-create-user">+ Add User</button>
+        <button type="button" class="modal-tab-btn" data-tab="tab-sync-settings">Portfolio Sync</button>
       </div>
 
       <div class="modal-body">
@@ -652,6 +692,66 @@
 
             <div class="modal-form-actions">
               <button type="submit" id="create-user-btn" class="btn-create-user">Create User Account</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Tab 3: Shinjiru Portfolio Sync Settings -->
+        <div id="tab-sync-settings" class="modal-tab-pane">
+          <div id="sync-settings-alert" class="modal-alert hidden"></div>
+          
+          <div class="sync-status-card">
+            <div class="sync-status-header">
+              <div class="sync-status-indicator" id="sync-connection-indicator">
+                <span class="status-dot unknown"></span>
+                <span id="sync-connection-status-text">Connection unchecked</span>
+              </div>
+              <button type="button" id="btn-test-sync-health" class="btn-test-connection">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <path d="M23 4v6h-6"></path>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+                <span>Test Connection</span>
+              </button>
+            </div>
+            <div class="sync-status-detail" id="sync-connection-details">
+              Click "Test Connection" to verify real-time REST API connectivity to Shinjiru WordPress.
+            </div>
+          </div>
+
+          <form id="sync-settings-form" class="modal-form">
+            <div class="modal-form-grid">
+              <div class="input-group full-width">
+                <label for="sync-setting-target-site">Target WordPress Site URL</label>
+                <input type="url" id="sync-setting-target-site" placeholder="https://wwwdev.shinjiru.com.my" required autocomplete="off" />
+              </div>
+
+              <div class="input-group full-width">
+                <label for="sync-setting-portfolio-url">Live Portfolio Page URL</label>
+                <input type="url" id="sync-setting-portfolio-url" placeholder="https://wwwdev.shinjiru.com.my/web-design/web-design-portfolios/" required autocomplete="off" />
+              </div>
+
+              <div class="input-group full-width">
+                <label for="sync-setting-endpoint">Sync REST API Endpoint</label>
+                <input type="url" id="sync-setting-endpoint" placeholder="https://wwwdev.shinjiru.com.my/wp-json/shinjiru-portfolio/v1/sync" required autocomplete="off" />
+              </div>
+
+              <div class="input-group full-width">
+                <label for="sync-setting-token">Secret Security Token (X-Shinjiru-Sync-Token)</label>
+                <div class="input-with-toggle">
+                  <input type="password" id="sync-setting-token" placeholder="shj_..." required autocomplete="off" />
+                  <button type="button" id="toggle-sync-token-btn" class="input-toggle-btn" title="Toggle Token Visibility" aria-label="Toggle Token Visibility">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-form-actions">
+              <button type="submit" id="save-sync-settings-btn" class="btn-create-user">Save Configuration</button>
             </div>
           </form>
         </div>
@@ -753,6 +853,113 @@
       <div class="alert-dialog-actions">
         <button type="button" id="cancel-delete-btn" class="modal-cancel-btn">Cancel</button>
         <button type="button" id="confirm-delete-btn" class="modal-destructive-btn">Delete Showcase</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Approve & Upload to Shinjiru Modal (Apple Sheet) -->
+  <div id="approve-sync-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sync-modal-title">
+    <div class="modal-container apple-sheet">
+      <div class="modal-header">
+        <div class="modal-header-text">
+          <div class="modal-pill-tag">Admin Approval & Deployment</div>
+          <h2 id="sync-modal-title" class="modal-title">Approve & Upload to Shinjiru</h2>
+          <p class="modal-subtitle">Deploy this showcase directly to the live Shinjiru Web Design Portfolio page with 1-click rollback protection.</p>
+        </div>
+        <button id="close-sync-modal-btn" class="modal-close-btn" aria-label="Close dialog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="sync-modal-alert" class="modal-alert hidden"></div>
+        <form id="approve-sync-form" class="modal-form">
+          <input type="hidden" id="sync-showcase-slug" />
+          
+          <div class="sync-preview-summary">
+            <div class="sync-preview-thumb-box">
+              <img id="sync-preview-thumb" src="" alt="Showcase Preview" />
+            </div>
+            <div class="sync-preview-details">
+              <div class="sync-preview-target-badge">
+                <span class="pulse-dot"></span>
+                <span>Target: wwwdev.shinjiru.com.my</span>
+              </div>
+              <div class="sync-preview-meta-title" id="sync-preview-title">Project Title</div>
+              <div class="sync-preview-meta-url" id="sync-preview-url">https://example.com</div>
+            </div>
+          </div>
+
+          <div class="modal-form-grid">
+            <div class="input-group">
+              <label for="sync-input-title">Project Title (Displays on Shinjiru Card) <span class="required-mark">*</span></label>
+              <input type="text" id="sync-input-title" required autocomplete="off" placeholder="e.g. Acme Solutions" />
+            </div>
+
+            <div class="input-group">
+              <label for="sync-input-url">Website URL (Links to Client Site) <span class="required-mark">*</span></label>
+              <input type="text" id="sync-input-url" required autocomplete="off" placeholder="https://example.com" />
+            </div>
+
+            <div class="input-group">
+              <label for="sync-input-industry">Industry Category (Shinjiru Filter) <span class="required-mark">*</span></label>
+              <select id="sync-input-industry" class="styled-select" required>
+                <!-- Populated dynamically via JS from SHINJIRU_INDUSTRIES -->
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label for="sync-input-type">Website Type (Filter Tag) <span class="required-mark">*</span></label>
+              <select id="sync-input-type" class="styled-select" required>
+                <option value="Business" selected>Business</option>
+                <option value="E-commerce">E-commerce</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="sync-guarantee-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="guarantee-icon">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <div class="guarantee-text">
+              <strong>1-Click Reversible Sync:</strong> Automatically uploads the showcase as WebP, renders into Shinjiru's live portfolio card grid, and preserves complete 1-click rollback capability.
+            </div>
+          </div>
+
+          <div class="modal-form-actions">
+            <button type="button" id="cancel-sync-modal-btn" class="modal-cancel-btn">Cancel</button>
+            <button type="submit" id="submit-approve-sync-btn" class="btn-sync-submit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Approve & Deploy to Shinjiru</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Apple Rollback Confirmation Alert Dialog -->
+  <div id="confirm-rollback-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="rollback-dialog-title">
+    <div class="modal-container apple-alert-sheet">
+      <div class="alert-dialog-icon rollback-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="30" height="30">
+          <polyline points="1 4 1 10 7 10"></polyline>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+        </svg>
+      </div>
+      <div class="alert-dialog-body">
+        <h2 id="rollback-dialog-title" class="alert-dialog-title">Rollback from Shinjiru?</h2>
+        <p class="alert-dialog-text">Are you sure you want to remove <strong id="rollback-project-name">this project</strong> from the live Shinjiru Web Design Portfolio? The card will be unpublished immediately and the asset archived. You can re-upload at any time.</p>
+      </div>
+      <div class="alert-dialog-actions">
+        <button type="button" id="cancel-rollback-btn" class="modal-cancel-btn">Cancel</button>
+        <button type="button" id="confirm-rollback-btn" class="modal-destructive-btn">Rollback Card</button>
       </div>
     </div>
   </div>

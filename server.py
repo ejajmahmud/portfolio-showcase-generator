@@ -55,6 +55,15 @@ from core.auth import (
     ROLES,
     ROLE_PERMISSIONS
 )
+from core.sync import (
+    SHINJIRU_INDUSTRIES,
+    SHINJIRU_WEBSITE_TYPES,
+    get_sync_settings,
+    save_sync_settings,
+    check_sync_health,
+    sync_showcase_to_shinjiru,
+    rollback_showcase_from_shinjiru
+)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EXPORTS_DIR = os.path.join(BASE_DIR, "exports")
@@ -151,6 +160,33 @@ class BatchGenerateRequest(BaseModel):
     delay: Optional[float] = 2.5
     headless: Optional[bool] = True
 
+class SyncPublishRequest(BaseModel):
+    slug: str
+    title: Optional[str] = None
+    url: Optional[str] = None
+    industry: Optional[str] = None
+    website_type: Optional[str] = None
+
+class SyncRollbackRequest(BaseModel):
+    slug: str
+
+class SyncConfirmRequest(BaseModel):
+    slug: str
+    title: Optional[str] = None
+    industry: Optional[str] = None
+    website_type: Optional[str] = None
+    remote_image_url: Optional[str] = None
+    portfolio_page_url: Optional[str] = None
+
+class SyncSettingsRequest(BaseModel):
+    target_site: Optional[str] = None
+    portfolio_page_url: Optional[str] = None
+    sync_endpoint: Optional[str] = None
+    rollback_endpoint: Optional[str] = None
+    health_endpoint: Optional[str] = None
+    secret_token: Optional[str] = None
+    auto_publish_on_approve: Optional[bool] = None
+
 # --- Authentication Helpers & RBAC Dependencies ---
 def get_current_user_from_request(request: Request) -> Optional[dict]:
     token = request.cookies.get("session_token")
@@ -212,6 +248,19 @@ def save_history(entry):
     history = history[:30]
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=2)
+
+def update_history_item(slug: str, updates: dict) -> Optional[dict]:
+    history = load_history()
+    target = None
+    for item in history:
+        if item.get("slug") == slug:
+            item.update(updates)
+            target = item
+            break
+    if target:
+        with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(history, f, indent=2)
+    return target
 
 # --- Frontend Routes ---
 @app.get("/guide", response_class=HTMLResponse)
@@ -715,6 +764,13 @@ async def delete_history_showcase(slug: str, request: Request):
     if not target:
         raise HTTPException(status_code=404, detail="Showcase not found.")
 
+    # Reversible rollback: If showcase was synced to live Shinjiru Portfolio, automatically rollback remote card
+    if target.get("sync_status") == "synced":
+        try:
+            rollback_showcase_from_shinjiru(slug)
+        except Exception as e:
+            print(f"Warning: could not rollback {slug} on Shinjiru during delete: {e}")
+
     with open(HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(new_history, f, indent=2)
 
@@ -727,6 +783,204 @@ async def delete_history_showcase(slug: str, request: Request):
             print(f"Warning: could not delete directory {project_dir}: {e}")
 
     return {"success": True, "deleted": slug}
+
+# --- Shinjiru Portfolio Sync & Approval API ---
+@app.get("/api/sync/settings")
+async def get_sync_settings_endpoint(request: Request):
+    require_auth(request)
+    user = get_current_user_from_request(request)
+    settings = get_sync_settings()
+    return {
+        "success": True,
+        "settings": settings,
+        "industries": SHINJIRU_INDUSTRIES,
+        "website_types": SHINJIRU_WEBSITE_TYPES,
+        "is_admin": user.get("role") == "admin"
+    }
+
+@app.post("/api/sync/settings")
+async def update_sync_settings_endpoint(req: SyncSettingsRequest, request: Request):
+    require_role(["admin"])(request)
+    updates = {k: v for k, v in req.dict().items() if v is not None}
+    updated = save_sync_settings(updates)
+    return {"success": True, "settings": updated}
+
+@app.get("/api/sync/health")
+async def get_sync_health_endpoint(request: Request):
+    require_auth(request)
+    health = check_sync_health()
+    return health
+
+@app.post("/api/sync/approve-and-publish")
+async def approve_and_publish_endpoint(req: SyncPublishRequest, request: Request):
+    user = require_role(["admin"])(request)
+    slug = req.slug.strip()
+    history = load_history()
+    target = None
+    for item in history:
+        if item.get("slug") == slug:
+            target = item
+            break
+
+    if not target:
+        raise HTTPException(status_code=404, detail="Showcase not found in history.")
+
+    title = (req.title or target.get("title") or slug).strip()
+    url = (req.url or target.get("url") or "").strip()
+    industry = (req.industry or target.get("category") or "Business & Services").strip()
+    website_type = (req.website_type or target.get("type") or "Business").strip()
+
+    # Locate WebP asset
+    webp_path = os.path.join(EXPORTS_DIR, slug, f"{slug}.webp")
+    if not os.path.exists(webp_path):
+        rel_webp = target.get("exports", {}).get("showcase_webp")
+        if rel_webp:
+            candidate = os.path.join(BASE_DIR, rel_webp.lstrip("/"))
+            if os.path.exists(candidate):
+                webp_path = candidate
+
+    if not os.path.exists(webp_path):
+        raise HTTPException(
+            status_code=400,
+            detail=f"WebP showcase image not found for slug '{slug}'. Please generate or regenerate the showcase."
+        )
+
+    # Read WebP image bytes and encode to base64
+    import base64
+    with open(webp_path, "rb") as img_f:
+        b64_str = base64.b64encode(img_f.read()).decode("utf-8")
+
+    settings = get_sync_settings()
+
+    # Attempt direct server-to-server sync first
+    try:
+        res = sync_showcase_to_shinjiru(
+            slug=slug,
+            title=title,
+            url=url,
+            industry=industry,
+            website_type=website_type,
+            webp_path=webp_path
+        )
+        if res.get("success"):
+            updates = {
+                "sync_status": "synced",
+                "synced_at": datetime.now(timezone.utc).isoformat(),
+                "synced_by": user.get("username", "admin"),
+                "synced_industry": industry,
+                "synced_type": website_type,
+                "synced_remote_url": res.get("url") or (res.get("item", {}) or {}).get("image_url", ""),
+                "synced_portfolio_page": res.get("portfolio_page_url", "")
+            }
+            updated_item = update_history_item(slug, updates)
+            return {
+                "success": True,
+                "message": f"Showcase '{title}' successfully approved and synced to Shinjiru Portfolio!",
+                "remote_data": res,
+                "showcase": updated_item
+            }
+    except Exception as e:
+        print(f"Direct sync failed from server: {e}. Handing off to client fallback...")
+
+    # Dual-Path Resilient Architecture: Hand off payload to browser client to bypass server-to-server firewall blocks
+    return {
+        "success": True,
+        "needs_client_sync": True,
+        "sync_endpoint": settings.get("sync_endpoint"),
+        "secret_token": settings.get("secret_token"),
+        "portfolio_page_url": settings.get("portfolio_page_url"),
+        "payload": {
+            "title": title,
+            "url": url,
+            "industry": industry,
+            "website_type": website_type,
+            "slug": slug,
+            "image_base64": b64_str
+        }
+    }
+
+@app.post("/api/sync/confirm-published")
+async def confirm_published_endpoint(req: SyncConfirmRequest, request: Request):
+    user = require_role(["admin"])(request)
+    slug = req.slug.strip()
+    history = load_history()
+    target = None
+    for item in history:
+        if item.get("slug") == slug:
+            target = item
+            break
+
+    if not target:
+        raise HTTPException(status_code=404, detail="Showcase not found.")
+
+    updates = {
+        "sync_status": "synced",
+        "synced_at": datetime.now(timezone.utc).isoformat(),
+        "synced_by": user.get("username", "admin"),
+        "synced_industry": req.industry or target.get("category") or "Business & Services",
+        "synced_type": req.website_type or target.get("type") or "Business",
+        "synced_remote_url": req.remote_image_url or "",
+        "synced_portfolio_page": req.portfolio_page_url or "https://wwwdev.shinjiru.com.my/web-design/web-design-portfolios/"
+    }
+    updated_item = update_history_item(slug, updates)
+    return {"success": True, "showcase": updated_item}
+
+@app.post("/api/sync/rollback")
+async def rollback_sync_endpoint(req: SyncRollbackRequest, request: Request):
+    user = require_role(["admin"])(request)
+    slug = req.slug.strip()
+    history = load_history()
+    target = None
+    for item in history:
+        if item.get("slug") == slug:
+            target = item
+            break
+
+    if not target:
+        raise HTTPException(status_code=404, detail="Showcase not found in history.")
+
+    settings = get_sync_settings()
+
+    try:
+        res = rollback_showcase_from_shinjiru(slug)
+        if res.get("success"):
+            updates = {
+                "sync_status": "draft",
+                "rolled_back_at": datetime.now(timezone.utc).isoformat(),
+                "rolled_back_by": user.get("username", "admin")
+            }
+            updated_item = update_history_item(slug, updates)
+            return {
+                "success": True,
+                "message": f"Showcase '{slug}' was successfully rolled back and removed from Shinjiru Portfolio.",
+                "remote_data": res,
+                "showcase": updated_item
+            }
+    except Exception as e:
+        print(f"Direct rollback failed from server: {e}. Handing off to client fallback...")
+
+    # Dual-Path Resilient Architecture: Hand off rollback to browser client
+    return {
+        "success": True,
+        "needs_client_rollback": True,
+        "rollback_endpoint": settings.get("rollback_endpoint"),
+        "secret_token": settings.get("secret_token"),
+        "payload": {
+            "slug": slug
+        }
+    }
+
+@app.post("/api/sync/confirm-rollback")
+async def confirm_rollback_endpoint(req: SyncRollbackRequest, request: Request):
+    user = require_role(["admin"])(request)
+    slug = req.slug.strip()
+    updates = {
+        "sync_status": "draft",
+        "rolled_back_at": datetime.now(timezone.utc).isoformat(),
+        "rolled_back_by": user.get("username", "admin")
+    }
+    updated_item = update_history_item(slug, updates)
+    return {"success": True, "showcase": updated_item}
 
 @app.get("/api/download/{project}/{filename}")
 async def download_file(project: str, filename: str, request: Request):

@@ -162,6 +162,77 @@ document.addEventListener('DOMContentLoaded', () => {
   const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
   let showcaseToDelete = null;
 
+  // Shinjiru Portfolio Live Sync Elements
+  const resultSyncBanner = document.getElementById('result-sync-banner');
+  const resultSyncBadge = document.getElementById('result-sync-badge');
+  const resultSyncStatusText = document.getElementById('result-sync-status-text');
+  const resultSyncDesc = document.getElementById('result-sync-desc');
+  const btnResultApproveSync = document.getElementById('btn-result-approve-sync');
+  const btnResultRollbackSync = document.getElementById('btn-result-rollback-sync');
+  const btnResultViewLive = document.getElementById('btn-result-view-live');
+
+  // Approve & Deploy Sheet Modal Elements
+  const approveSyncModal = document.getElementById('approve-sync-modal');
+  const closeSyncModalBtn = document.getElementById('close-sync-modal-btn');
+  const cancelSyncModalBtn = document.getElementById('cancel-sync-modal-btn');
+  const approveSyncForm = document.getElementById('approve-sync-form');
+  const syncModalAlert = document.getElementById('sync-modal-alert');
+  const syncShowcaseSlug = document.getElementById('sync-showcase-slug');
+  const syncPreviewThumb = document.getElementById('sync-preview-thumb');
+  const syncPreviewTitle = document.getElementById('sync-preview-title');
+  const syncPreviewUrl = document.getElementById('sync-preview-url');
+  const syncInputTitle = document.getElementById('sync-input-title');
+  const syncInputUrl = document.getElementById('sync-input-url');
+  const syncInputIndustry = document.getElementById('sync-input-industry');
+  const syncInputType = document.getElementById('sync-input-type');
+  const submitApproveSyncBtn = document.getElementById('submit-approve-sync-btn');
+
+  // Rollback Confirmation Alert Elements
+  const confirmRollbackModal = document.getElementById('confirm-rollback-modal');
+  const rollbackProjectName = document.getElementById('rollback-project-name');
+  const cancelRollbackBtn = document.getElementById('cancel-rollback-btn');
+  const confirmRollbackBtn = document.getElementById('confirm-rollback-btn');
+  let showcaseToRollback = null;
+
+  // Sync Settings Tab Elements (Inside User Management Modal)
+  const syncSettingsAlert = document.getElementById('sync-settings-alert');
+  const syncSettingsForm = document.getElementById('sync-settings-form');
+  const syncSettingTargetSite = document.getElementById('sync-setting-target-site');
+  const syncSettingPortfolioUrl = document.getElementById('sync-setting-portfolio-url');
+  const syncSettingEndpoint = document.getElementById('sync-setting-endpoint');
+  const syncSettingToken = document.getElementById('sync-setting-token');
+  const toggleSyncTokenBtn = document.getElementById('toggle-sync-token-btn');
+  const btnTestSyncHealth = document.getElementById('btn-test-sync-health');
+  const syncConnectionIndicator = document.getElementById('sync-connection-indicator');
+  const syncConnectionStatusText = document.getElementById('sync-connection-status-text');
+  const syncConnectionDetails = document.getElementById('sync-connection-details');
+  const saveSyncSettingsBtn = document.getElementById('save-sync-settings-btn');
+
+  const SHINJIRU_INDUSTRIES = [
+    "Argiculture & Animals",
+    "Automotive & Transportation",
+    "Business & Services",
+    "Creative & Design",
+    "Consultancy",
+    "Community",
+    "Education",
+    "Engineering",
+    "Events & Entertainment",
+    "Factory & Machinery",
+    "Fashion & Beauty",
+    "Film & TV",
+    "Finance & Law",
+    "Food & Drinks",
+    "Health & Medical",
+    "Logistics",
+    "Music & Bands",
+    "Oils & Gas & Marine",
+    "Printing",
+    "Real Estate & Construction",
+    "Sport & Fitness",
+    "Technology & Apps"
+  ];
+
   // Toast Container & Quick New Button
   const toastContainer = document.getElementById('toast-container');
   const quickNewShowcaseBtn = document.getElementById('btn-quick-new-showcase');
@@ -364,24 +435,465 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Quick New Showcase Button (Smooth scroll to generator form with focus pulse)
-  if (quickNewShowcaseBtn) {
-    quickNewShowcaseBtn.addEventListener('click', () => {
-      if (currentUser && currentUser.role === 'viewer') {
-        showToast('Viewers cannot create showcases. Creator role required.', 'error');
-        return;
+  // --------------------------------------------------------------------------
+  // Shinjiru Portfolio Live Sync & Approval Modal Logic
+  // --------------------------------------------------------------------------
+  function populateIndustryDropdown(selectedVal = '') {
+    if (!syncInputIndustry) return;
+    syncInputIndustry.innerHTML = SHINJIRU_INDUSTRIES.map(ind => `
+      <option value="${escapeHtml(ind)}" ${ind === selectedVal ? 'selected' : ''}>${escapeHtml(ind)}</option>
+    `).join('');
+  }
+
+  function openApproveSyncModal(item) {
+    if (!approveSyncModal || !item) return;
+    if (syncModalAlert) {
+      syncModalAlert.className = 'modal-alert hidden';
+      syncModalAlert.textContent = '';
+    }
+    if (syncShowcaseSlug) syncShowcaseSlug.value = item.slug || '';
+    if (syncInputTitle) syncInputTitle.value = item.title || item.slug || '';
+    if (syncInputUrl) syncInputUrl.value = item.url || '';
+    if (syncPreviewTitle) syncPreviewTitle.textContent = item.title || item.slug || '';
+    if (syncPreviewUrl) syncPreviewUrl.textContent = item.url || '';
+
+    // Thumbnail preview
+    const thumbSrc = (item.exports && (item.exports.showcase_webp || item.exports.showcase_png || item.exports.showcase_jpg)) || '';
+    if (syncPreviewThumb) {
+      syncPreviewThumb.src = thumbSrc;
+    }
+
+    populateIndustryDropdown(item.synced_industry || item.category || 'Business & Services');
+
+    if (syncInputType) {
+      syncInputType.value = item.synced_type || item.type || 'Business';
+    }
+
+    approveSyncModal.classList.remove('hidden');
+    if (syncInputTitle) syncInputTitle.focus();
+  }
+
+  function closeApproveSyncModal() {
+    if (approveSyncModal) approveSyncModal.classList.add('hidden');
+  }
+
+  if (closeSyncModalBtn) closeSyncModalBtn.addEventListener('click', closeApproveSyncModal);
+  if (cancelSyncModalBtn) cancelSyncModalBtn.addEventListener('click', closeApproveSyncModal);
+  if (approveSyncModal) {
+    approveSyncModal.addEventListener('click', (e) => {
+      if (e.target === approveSyncModal) closeApproveSyncModal();
+    });
+  }
+
+  if (approveSyncForm) {
+    approveSyncForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const slug = syncShowcaseSlug ? syncShowcaseSlug.value : '';
+      if (!slug) return;
+
+      const payload = {
+        slug: slug,
+        title: syncInputTitle.value.trim(),
+        url: syncInputUrl.value.trim(),
+        industry: syncInputIndustry.value.trim(),
+        website_type: syncInputType.value.trim()
+      };
+
+      if (submitApproveSyncBtn) {
+        submitApproveSyncBtn.disabled = true;
+        submitApproveSyncBtn.innerHTML = `
+          <svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <line x1="12" y1="2" x2="12" y2="6"></line>
+            <line x1="12" y1="18" x2="12" y2="22"></line>
+            <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+            <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+            <line x1="2" y1="12" x2="6" y2="12"></line>
+            <line x1="18" y1="12" x2="22" y2="12"></line>
+            <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+            <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+          </svg>
+          <span>Uploading & Syncing...</span>
+        `;
       }
-      const genCard = document.querySelector('.generator-card') || form;
-      if (genCard) {
-        genCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      try {
+        const res = await fetch('/api/sync/approve-and-publish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || data.message || 'Sync to Shinjiru WordPress failed.');
+        }
+
+        let updated = data.showcase;
+
+        // Dual-Path Resilient Architecture: If server-side was blocked by firewall, client browser executes direct sync
+        if (data.needs_client_sync) {
+          const wpRes = await fetch(data.sync_endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Shinjiru-Sync-Token': data.secret_token
+            },
+            body: JSON.stringify(data.payload)
+          });
+          const wpData = await wpRes.json();
+          if (!wpRes.ok || !wpData.success) {
+            throw new Error(wpData.message || 'WordPress sync rejected by remote site.');
+          }
+
+          // Confirm publication status to Studio backend
+          const confirmRes = await fetch('/api/sync/confirm-published', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              slug: slug,
+              title: payload.title,
+              industry: payload.industry,
+              website_type: payload.website_type,
+              remote_image_url: wpData.item ? wpData.item.image_url : '',
+              portfolio_page_url: data.portfolio_page_url
+            })
+          });
+          const confirmData = await confirmRes.json();
+          updated = confirmData.showcase || updated;
+        }
+
+        const idx = allHistory.findIndex(h => h.slug === slug);
+        if (idx !== -1) {
+          allHistory[idx] = { ...allHistory[idx], ...updated };
+        }
+        const fIdx = filteredHistory.findIndex(h => h.slug === slug);
+        if (fIdx !== -1) {
+          filteredHistory[fIdx] = { ...filteredHistory[fIdx], ...updated };
+        }
+
+        if (currentResultData && currentResultData.slug === slug) {
+          currentResultData = { ...currentResultData, ...updated };
+          updateResultSyncUI(currentResultData);
+        }
+
+        closeApproveSyncModal();
+        renderHistory();
+        showToast(`"${payload.title}" successfully approved and deployed live to Shinjiru Portfolio!`, 'success', 5000);
+      } catch (err) {
+        if (syncModalAlert) {
+          syncModalAlert.className = 'modal-alert error';
+          syncModalAlert.textContent = err.message;
+        }
+        showToast(err.message, 'error', 4500);
+      } finally {
+        if (submitApproveSyncBtn) {
+          submitApproveSyncBtn.disabled = false;
+          submitApproveSyncBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span>Approve & Deploy to Shinjiru</span>
+          `;
+        }
       }
-      if (urlInput) {
-        setTimeout(() => {
-          urlInput.focus();
-          urlInput.classList.add('input-pulse-highlight');
-          setTimeout(() => urlInput.classList.remove('input-pulse-highlight'), 1200);
-        }, 300);
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // Shinjiru Portfolio Rollback Alert Modal
+  // --------------------------------------------------------------------------
+  function openRollbackModal(item) {
+    if (!confirmRollbackModal || !item) return;
+    showcaseToRollback = item;
+    if (rollbackProjectName) {
+      rollbackProjectName.textContent = `"${item.title || item.slug}"`;
+    }
+    confirmRollbackModal.classList.remove('hidden');
+  }
+
+  function closeRollbackModal() {
+    if (confirmRollbackModal) confirmRollbackModal.classList.add('hidden');
+    showcaseToRollback = null;
+  }
+
+  if (cancelRollbackBtn) cancelRollbackBtn.addEventListener('click', closeRollbackModal);
+  if (confirmRollbackModal) {
+    confirmRollbackModal.addEventListener('click', (e) => {
+      if (e.target === confirmRollbackModal) closeRollbackModal();
+    });
+  }
+
+  if (confirmRollbackBtn) {
+    confirmRollbackBtn.addEventListener('click', async () => {
+      if (!showcaseToRollback) return;
+      const item = showcaseToRollback;
+      const slug = item.slug;
+
+      confirmRollbackBtn.disabled = true;
+      confirmRollbackBtn.textContent = 'Rolling back...';
+
+      try {
+        const res = await fetch('/api/sync/rollback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug: slug })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || data.message || 'Rollback failed.');
+        }
+
+        let updated = data.showcase;
+
+        // Dual-Path Resilient Architecture: If server-side was blocked by firewall, client browser executes direct rollback
+        if (data.needs_client_rollback) {
+          const wpRes = await fetch(data.rollback_endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Shinjiru-Sync-Token': data.secret_token
+            },
+            body: JSON.stringify(data.payload)
+          });
+          const wpData = await wpRes.json();
+          if (!wpRes.ok || !wpData.success) {
+            throw new Error(wpData.message || 'WordPress rollback rejected by remote site.');
+          }
+
+          // Confirm rollback status to Studio backend
+          const confirmRes = await fetch('/api/sync/confirm-rollback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slug: slug })
+          });
+          const confirmData = await confirmRes.json();
+          updated = confirmData.showcase || updated;
+        }
+
+        const idx = allHistory.findIndex(h => h.slug === slug);
+        if (idx !== -1) {
+          allHistory[idx] = { ...allHistory[idx], ...updated };
+        }
+        const fIdx = filteredHistory.findIndex(h => h.slug === slug);
+        if (fIdx !== -1) {
+          filteredHistory[fIdx] = { ...filteredHistory[fIdx], ...updated };
+        }
+
+        if (currentResultData && currentResultData.slug === slug) {
+          currentResultData = { ...currentResultData, ...updated };
+          updateResultSyncUI(currentResultData);
+        }
+
+        closeRollbackModal();
+        renderHistory();
+        showToast(`Showcase "${item.title || slug}" was rolled back and removed from Shinjiru Portfolio.`, 'info', 4000);
+      } catch (err) {
+        showToast(err.message, 'error', 4500);
+      } finally {
+        if (confirmRollbackBtn) {
+          confirmRollbackBtn.disabled = false;
+          confirmRollbackBtn.textContent = 'Rollback Card';
+        }
       }
+    });
+  }
+
+  // Result Stage Sync Banner UI Updater
+  function updateResultSyncUI(data) {
+    if (!resultSyncBanner || !data) return;
+    const isSynced = data.sync_status === 'synced';
+    const isAdmin = currentUser && currentUser.role === 'admin';
+
+    if (resultSyncBadge) {
+      resultSyncBadge.className = `sync-banner-badge ${isSynced ? 'synced' : ''}`;
+    }
+    if (resultSyncStatusText) {
+      resultSyncStatusText.textContent = isSynced ? '● Live on Shinjiru' : 'Draft (Not Synced)';
+    }
+    if (resultSyncDesc) {
+      if (isSynced) {
+        resultSyncDesc.textContent = `Published live on Shinjiru Portfolio under "${escapeHtml(data.synced_industry || data.category || 'Business & Services')}" (${escapeHtml(data.synced_type || data.type || 'Business')}).`;
+      } else {
+        resultSyncDesc.textContent = 'Multi-device mockup is ready. Administrator approval deploys directly to the live Shinjiru Portfolio.';
+      }
+    }
+
+    if (btnResultViewLive) {
+      if (isSynced) {
+        btnResultViewLive.classList.remove('hidden');
+        btnResultViewLive.href = data.synced_portfolio_page || 'https://wwwdev.shinjiru.com.my/web-design/web-design-portfolios/';
+      } else {
+        btnResultViewLive.classList.add('hidden');
+      }
+    }
+
+    if (btnResultRollbackSync) {
+      if (isSynced && isAdmin) {
+        btnResultRollbackSync.classList.remove('hidden');
+      } else {
+        btnResultRollbackSync.classList.add('hidden');
+      }
+    }
+
+    if (btnResultApproveSync) {
+      if (!isSynced && isAdmin) {
+        btnResultApproveSync.classList.remove('hidden');
+        btnResultApproveSync.disabled = false;
+      } else {
+        btnResultApproveSync.classList.add('hidden');
+      }
+    }
+  }
+
+  if (btnResultApproveSync) {
+    btnResultApproveSync.addEventListener('click', () => {
+      if (currentResultData) {
+        openApproveSyncModal(currentResultData);
+      }
+    });
+  }
+
+  if (btnResultRollbackSync) {
+    btnResultRollbackSync.addEventListener('click', () => {
+      if (currentResultData) {
+        openRollbackModal(currentResultData);
+      }
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // Shinjiru Portfolio Sync Settings Management (Inside RBAC User Modal)
+  // --------------------------------------------------------------------------
+  async function loadSyncSettings() {
+    if (!syncSettingTargetSite) return;
+    try {
+      const res = await fetch('/api/sync/settings');
+      if (!res.ok) throw new Error('Failed to load sync settings');
+      const data = await res.json();
+      const s = data.settings || {};
+      syncSettingTargetSite.value = s.target_site || 'https://wwwdev.shinjiru.com.my';
+      if (syncSettingPortfolioUrl) syncSettingPortfolioUrl.value = s.portfolio_page_url || 'https://wwwdev.shinjiru.com.my/web-design/web-design-portfolios/';
+      if (syncSettingEndpoint) syncSettingEndpoint.value = s.sync_endpoint || 'https://wwwdev.shinjiru.com.my/wp-json/shinjiru-portfolio/v1/sync';
+      if (syncSettingToken) syncSettingToken.value = s.secret_token || '';
+
+      if (Array.isArray(data.industries) && data.industries.length > 0) {
+        SHINJIRU_INDUSTRIES.length = 0;
+        SHINJIRU_INDUSTRIES.push(...data.industries);
+      }
+    } catch (err) {
+      console.error('Error loading sync settings:', err);
+    }
+  }
+
+  if (btnTestSyncHealth) {
+    btnTestSyncHealth.addEventListener('click', async () => {
+      btnTestSyncHealth.disabled = true;
+      if (syncConnectionStatusText) syncConnectionStatusText.textContent = 'Testing connection...';
+      if (syncConnectionIndicator) {
+        const dot = syncConnectionIndicator.querySelector('.status-dot');
+        if (dot) dot.className = 'status-dot unknown';
+      }
+
+      try {
+        let res = await fetch('/api/sync/health');
+        let data = await res.json();
+        const dot = syncConnectionIndicator ? syncConnectionIndicator.querySelector('.status-dot') : null;
+
+        // If server-side was blocked by firewall, fallback to direct client connection check
+        if (!data.success && syncSettingEndpoint && syncSettingToken) {
+          const healthUrl = syncSettingEndpoint.value.replace(/\/sync\/?$/, '/health');
+          try {
+            const clientRes = await fetch(healthUrl, {
+              headers: { 'X-Shinjiru-Sync-Token': syncSettingToken.value }
+            });
+            if (clientRes.ok) {
+              const clientData = await clientRes.json();
+              data = {
+                success: true,
+                target_site: syncSettingTargetSite.value,
+                data: clientData,
+                note: '(Client Direct Mode)'
+              };
+            }
+          } catch (e) {
+            // Keep original server error
+          }
+        }
+
+        if (data.success) {
+          if (dot) dot.className = 'status-dot online';
+          if (syncConnectionStatusText) syncConnectionStatusText.textContent = `Connected (REST API 200 OK ${data.note || ''})`.trim();
+          if (syncConnectionDetails) {
+            const itemCount = data.data && data.data.total_cards ? `${data.data.total_cards} live showcases registered.` : 'Plugin active.';
+            syncConnectionDetails.textContent = `Connected to ${data.target_site}. ${itemCount}`;
+          }
+          showToast('Shinjiru WordPress REST API connected successfully', 'success');
+        } else {
+          if (dot) dot.className = 'status-dot offline';
+          if (syncConnectionStatusText) syncConnectionStatusText.textContent = 'Connection Failed';
+          if (syncConnectionDetails) syncConnectionDetails.textContent = `Error: ${data.error || 'Server returned non-200'}`;
+          showToast(`Health check error: ${data.error || 'Check endpoint'}`, 'error');
+        }
+      } catch (err) {
+        const dot = syncConnectionIndicator ? syncConnectionIndicator.querySelector('.status-dot') : null;
+        if (dot) dot.className = 'status-dot offline';
+        if (syncConnectionStatusText) syncConnectionStatusText.textContent = 'Network Error';
+        if (syncConnectionDetails) syncConnectionDetails.textContent = err.message;
+        showToast('Failed to reach sync health endpoint', 'error');
+      } finally {
+        btnTestSyncHealth.disabled = false;
+      }
+    });
+  }
+
+  if (syncSettingsForm) {
+    syncSettingsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (syncSettingsAlert) {
+        syncSettingsAlert.className = 'modal-alert hidden';
+        syncSettingsAlert.textContent = '';
+      }
+      const payload = {
+        target_site: syncSettingTargetSite.value.trim(),
+        portfolio_page_url: syncSettingPortfolioUrl.value.trim(),
+        sync_endpoint: syncSettingEndpoint.value.trim(),
+        secret_token: syncSettingToken.value.trim()
+      };
+
+      if (saveSyncSettingsBtn) saveSyncSettingsBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/sync/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.detail || 'Failed to save sync settings.');
+        }
+
+        if (syncSettingsAlert) {
+          syncSettingsAlert.className = 'modal-alert success';
+          syncSettingsAlert.textContent = 'Portfolio sync settings updated successfully.';
+        }
+        showToast('Sync settings saved', 'success');
+      } catch (err) {
+        if (syncSettingsAlert) {
+          syncSettingsAlert.className = 'modal-alert error';
+          syncSettingsAlert.textContent = err.message;
+        }
+        showToast(err.message, 'error');
+      } finally {
+        if (saveSyncSettingsBtn) saveSyncSettingsBtn.disabled = false;
+      }
+    });
+  }
+
+  if (toggleSyncTokenBtn && syncSettingToken) {
+    toggleSyncTokenBtn.addEventListener('click', () => {
+      syncSettingToken.type = syncSettingToken.type === 'password' ? 'text' : 'password';
     });
   }
 
@@ -391,6 +903,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (userModal && !userModal.classList.contains('hidden')) userModal.classList.add('hidden');
       if (editShowcaseModal && !editShowcaseModal.classList.contains('hidden')) closeEditModal();
       if (confirmDeleteModal && !confirmDeleteModal.classList.contains('hidden')) closeDeleteModal();
+      if (approveSyncModal && !approveSyncModal.classList.contains('hidden')) closeApproveSyncModal();
+      if (confirmRollbackModal && !confirmRollbackModal.classList.contains('hidden')) closeRollbackModal();
     }
   });
 
@@ -466,6 +980,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnText = generateBtn.querySelector('.btn-text');
         if (btnText) btnText.textContent = 'Viewing Mode (Disabled)';
       }
+    }
+
+    if (currentResultData) {
+      updateResultSyncUI(currentResultData);
     }
 
     // Re-render gallery cards with current user RBAC permissions (showing/hiding edit/delete actions)
@@ -582,6 +1100,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetPane) targetPane.classList.add('active');
       if (targetId === 'tab-user-list') {
         loadUsersList();
+      } else if (targetId === 'tab-sync-settings') {
+        loadSyncSettings();
       }
     });
   });
@@ -1200,6 +1720,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Default to Full Showcase view tab
     setActiveViewTab('showcase');
 
+    // Update Shinjiru Live Sync Status & Actions
+    updateResultSyncUI(data);
+
     // Configure Download Links
     const ex = data.exports || {};
     setupDownloadLink(dlShowcasePng, ex.showcase_png);
@@ -1351,12 +1874,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const pageItems = filteredHistory.slice(startIdx, endIdx);
 
     const canModify = currentUser && (currentUser.role === 'admin' || currentUser.role === 'creator');
+    const isAdmin = currentUser && currentUser.role === 'admin';
     const isGuest = currentUser && currentUser.role === 'guest';
 
     // Render cards with Apple Liquid Glass Action Menus & Tooltips
     historyGrid.innerHTML = pageItems.map(item => {
       const primaryThumb = (item.exports && (item.exports.showcase_webp || item.exports.showcase_png)) || '';
       const fallbackThumb = (item.exports && (item.exports.showcase_png || item.exports.showcase_jpg)) || '';
+      const isSynced = item.sync_status === 'synced';
       return `
       <div class="history-card-item" data-slug="${escapeHtml(item.slug)}">
         <div class="history-thumb">
@@ -1383,6 +1908,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
               </svg>
             </button>
+            ${isAdmin ? `
+              ${isSynced ? `
+                <button type="button" class="card-action-btn btn-sync-rollback" data-slug="${escapeHtml(item.slug)}" data-tooltip="Rollback from Shinjiru" aria-label="Rollback from Shinjiru">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                  </svg>
+                </button>
+                <a href="${escapeHtml(item.synced_portfolio_page || 'https://wwwdev.shinjiru.com.my/web-design/web-design-portfolios/')}" target="_blank" rel="noopener noreferrer" class="card-action-btn btn-sync-live" data-tooltip="View Live on Shinjiru" aria-label="View Live on Shinjiru" onclick="event.stopPropagation()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                </a>
+              ` : `
+                <button type="button" class="card-action-btn btn-sync-publish" data-slug="${escapeHtml(item.slug)}" data-tooltip="Approve & Upload to Shinjiru" aria-label="Approve & Upload to Shinjiru">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                </button>
+              `}
+            ` : ''}
             ${canModify ? `
               <button type="button" class="card-action-btn btn-edit" data-slug="${escapeHtml(item.slug)}" data-tooltip="Edit Details" aria-label="Edit Showcase Details">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1413,12 +1963,13 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="history-meta">
           <div class="history-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</div>
           <div class="history-url" title="${escapeHtml(item.url)}">${escapeHtml(item.url)}</div>
-          ${(item.category || item.type) ? `
-            <div class="history-tags">
-              ${item.category ? `<span class="badge-tag">${escapeHtml(item.category)}</span>` : ''}
-              ${item.type ? `<span class="badge-tag accent">${escapeHtml(item.type)}</span>` : ''}
-            </div>
-          ` : ''}
+          <div class="history-tags">
+            ${isSynced 
+              ? `<span class="badge-tag sync-live" title="Live on Shinjiru Web Design Portfolio">● Live on Shinjiru</span>` 
+              : `<span class="badge-tag sync-draft" title="Draft (Not uploaded to Shinjiru)">Draft</span>`}
+            ${item.category ? `<span class="badge-tag">${escapeHtml(item.category)}</span>` : ''}
+            ${item.type ? `<span class="badge-tag accent">${escapeHtml(item.type)}</span>` : ''}
+          </div>
         </div>
       </div>
       `;
@@ -1496,6 +2047,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const slug = btn.dataset.slug;
         const found = allHistory.find(h => h.slug === slug);
         if (found) openDeleteModal(found);
+      });
+    });
+
+    // Approve & Upload button on card (Admin only)
+    historyGrid.querySelectorAll('.btn-sync-publish').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const slug = btn.dataset.slug;
+        const found = allHistory.find(h => h.slug === slug);
+        if (found) openApproveSyncModal(found);
+      });
+    });
+
+    // Rollback button on card (Admin only)
+    historyGrid.querySelectorAll('.btn-sync-rollback').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const slug = btn.dataset.slug;
+        const found = allHistory.find(h => h.slug === slug);
+        if (found) openRollbackModal(found);
       });
     });
 
