@@ -162,14 +162,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
   let showcaseToDelete = null;
 
-  // Shinjiru Portfolio Live Sync Elements
-  const resultSyncBanner = document.getElementById('result-sync-banner');
-  const resultSyncBadge = document.getElementById('result-sync-badge');
-  const resultSyncStatusText = document.getElementById('result-sync-status-text');
-  const resultSyncDesc = document.getElementById('result-sync-desc');
-  const btnResultApproveSync = document.getElementById('btn-result-approve-sync');
-  const btnResultRollbackSync = document.getElementById('btn-result-rollback-sync');
-  const btnResultViewLive = document.getElementById('btn-result-view-live');
+  // Shinjiru Portfolio Live Sync Elements (Header quick actions & Download card)
+  const resultSyncStatusBadge = document.getElementById('result-sync-status-badge');
+  const resultHeaderSyncActions = document.getElementById('result-header-sync-actions');
+  const btnHeaderApproveSync = document.getElementById('btn-header-approve-sync');
+  const btnHeaderViewLive = document.getElementById('btn-header-view-live');
+  const btnHeaderRollbackSync = document.getElementById('btn-header-rollback-sync');
+
+  const dlSyncCard = document.getElementById('dl-sync-card');
+  const dlSyncCardStatus = document.getElementById('dl-sync-card-status');
+  const dlSyncCardDesc = document.getElementById('dl-sync-card-desc');
+  const btnCardApproveSync = document.getElementById('btn-card-approve-sync');
+  const btnCardViewLive = document.getElementById('btn-card-view-live');
+  const btnCardRollbackSync = document.getElementById('btn-card-rollback-sync');
 
   // Approve & Deploy Sheet Modal Elements
   const approveSyncModal = document.getElementById('approve-sync-modal');
@@ -699,63 +704,131 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Result Stage Sync Banner UI Updater
+  // Result Stage Sync UI Updater (Header quick action + Download card)
   function updateResultSyncUI(data) {
-    if (!resultSyncBanner || !data) return;
+    if (!data) return;
     const isSynced = data.sync_status === 'synced';
     const isAdmin = currentUser && currentUser.role === 'admin';
+    const liveUrl = data.synced_portfolio_page || 'https://wwwdev.shinjiru.com.my/web-design/web-design-portfolios/';
+    const industryName = data.synced_industry || data.category || 'Business & Services';
 
-    if (resultSyncBadge) {
-      resultSyncBadge.className = `sync-banner-badge ${isSynced ? 'synced' : ''}`;
-    }
-    if (resultSyncStatusText) {
-      resultSyncStatusText.textContent = isSynced ? '● Live on Shinjiru' : 'Draft (Not Synced)';
-    }
-    if (resultSyncDesc) {
+    // 1. Title Status Badge
+    if (resultSyncStatusBadge) {
       if (isSynced) {
-        resultSyncDesc.textContent = `Published live on Shinjiru Portfolio under "${escapeHtml(data.synced_industry || data.category || 'Business & Services')}" (${escapeHtml(data.synced_type || data.type || 'Business')}).`;
+        resultSyncStatusBadge.className = 'badge-tag sync-live';
+        resultSyncStatusBadge.textContent = '● Live on Shinjiru';
       } else {
-        resultSyncDesc.textContent = 'Multi-device mockup is ready. Administrator approval deploys directly to the live Shinjiru Portfolio.';
+        resultSyncStatusBadge.className = 'badge-tag sync-draft';
+        resultSyncStatusBadge.textContent = 'Draft';
       }
     }
 
-    if (btnResultViewLive) {
+    // 2. Header Quick Actions
+    if (resultHeaderSyncActions) {
+      if (isAdmin) {
+        resultHeaderSyncActions.classList.remove('hidden');
+        if (isSynced) {
+          if (btnHeaderApproveSync) btnHeaderApproveSync.classList.add('hidden');
+          if (btnHeaderViewLive) {
+            btnHeaderViewLive.classList.remove('hidden');
+            btnHeaderViewLive.href = liveUrl;
+          }
+          if (btnHeaderRollbackSync) btnHeaderRollbackSync.classList.remove('hidden');
+        } else {
+          if (btnHeaderApproveSync) {
+            btnHeaderApproveSync.classList.remove('hidden');
+            btnHeaderApproveSync.disabled = false;
+          }
+          if (btnHeaderViewLive) btnHeaderViewLive.classList.add('hidden');
+          if (btnHeaderRollbackSync) btnHeaderRollbackSync.classList.add('hidden');
+        }
+      } else {
+        // Non-admin (Guest/Viewer)
+        if (isSynced && btnHeaderViewLive) {
+          resultHeaderSyncActions.classList.remove('hidden');
+          if (btnHeaderApproveSync) btnHeaderApproveSync.classList.add('hidden');
+          btnHeaderViewLive.classList.remove('hidden');
+          btnHeaderViewLive.href = liveUrl;
+          if (btnHeaderRollbackSync) btnHeaderRollbackSync.classList.add('hidden');
+        } else {
+          resultHeaderSyncActions.classList.add('hidden');
+        }
+      }
+    }
+
+    // 3. Download Section Deployment Card
+    if (dlSyncCard) {
       if (isSynced) {
-        btnResultViewLive.classList.remove('hidden');
-        btnResultViewLive.href = data.synced_portfolio_page || 'https://wwwdev.shinjiru.com.my/web-design/web-design-portfolios/';
+        if (dlSyncCardStatus) {
+          dlSyncCardStatus.className = 'sync-card-status live';
+          dlSyncCardStatus.textContent = 'Live';
+        }
+        if (dlSyncCardDesc) {
+          dlSyncCardDesc.textContent = `Live on Shinjiru Portfolio • ${escapeHtml(industryName)}`;
+        }
+        if (btnCardApproveSync) btnCardApproveSync.classList.add('hidden');
+        if (btnCardViewLive) {
+          btnCardViewLive.classList.remove('hidden');
+          btnCardViewLive.href = liveUrl;
+        }
+        if (btnCardRollbackSync) {
+          if (isAdmin) {
+            btnCardRollbackSync.classList.remove('hidden');
+          } else {
+            btnCardRollbackSync.classList.add('hidden');
+          }
+        }
       } else {
-        btnResultViewLive.classList.add('hidden');
-      }
-    }
-
-    if (btnResultRollbackSync) {
-      if (isSynced && isAdmin) {
-        btnResultRollbackSync.classList.remove('hidden');
-      } else {
-        btnResultRollbackSync.classList.add('hidden');
-      }
-    }
-
-    if (btnResultApproveSync) {
-      if (!isSynced && isAdmin) {
-        btnResultApproveSync.classList.remove('hidden');
-        btnResultApproveSync.disabled = false;
-      } else {
-        btnResultApproveSync.classList.add('hidden');
+        // Draft
+        if (dlSyncCardStatus) {
+          dlSyncCardStatus.className = 'sync-card-status draft';
+          dlSyncCardStatus.textContent = 'Draft';
+        }
+        if (dlSyncCardDesc) {
+          dlSyncCardDesc.textContent = 'Publish this showcase directly to Shinjiru Portfolio';
+        }
+        if (isAdmin) {
+          if (btnCardApproveSync) {
+            btnCardApproveSync.classList.remove('hidden');
+            btnCardApproveSync.disabled = false;
+          }
+        } else {
+          if (btnCardApproveSync) btnCardApproveSync.classList.add('hidden');
+        }
+        if (btnCardViewLive) btnCardViewLive.classList.add('hidden');
+        if (btnCardRollbackSync) btnCardRollbackSync.classList.add('hidden');
       }
     }
   }
 
-  if (btnResultApproveSync) {
-    btnResultApproveSync.addEventListener('click', () => {
+  // Header quick sync actions
+  if (btnHeaderApproveSync) {
+    btnHeaderApproveSync.addEventListener('click', () => {
       if (currentResultData) {
         openApproveSyncModal(currentResultData);
       }
     });
   }
 
-  if (btnResultRollbackSync) {
-    btnResultRollbackSync.addEventListener('click', () => {
+  if (btnHeaderRollbackSync) {
+    btnHeaderRollbackSync.addEventListener('click', () => {
+      if (currentResultData) {
+        openRollbackModal(currentResultData);
+      }
+    });
+  }
+
+  // Card sync actions
+  if (btnCardApproveSync) {
+    btnCardApproveSync.addEventListener('click', () => {
+      if (currentResultData) {
+        openApproveSyncModal(currentResultData);
+      }
+    });
+  }
+
+  if (btnCardRollbackSync) {
+    btnCardRollbackSync.addEventListener('click', () => {
       if (currentResultData) {
         openRollbackModal(currentResultData);
       }

@@ -27,7 +27,7 @@
   <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
   <link rel="alternate icon" href="/static/img/favicon.ico">
   <link rel="apple-touch-icon" href="/static/img/favicon.png">
-  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/style.css?v=2.2.0">
 </head>
 <body>
   <!-- Ambient Liquid Canvas & Dark Grain Gradient Backdrop -->
@@ -472,7 +472,10 @@
       <section id="results-card" class="card results-card hidden">
         <div class="results-header">
           <div class="results-info">
-            <h2 id="result-title">Project Showcase</h2>
+            <div class="results-title-line">
+              <h2 id="result-title">Project Showcase</h2>
+              <span id="result-sync-status-badge" class="badge-tag sync-draft">Draft</span>
+            </div>
             <div class="results-meta-row">
               <a id="result-url" class="result-url" href="#" target="_blank" rel="noopener">https://example.com</a>
               <span id="result-category-badge" class="badge-tag hidden"></span>
@@ -480,12 +483,41 @@
             </div>
           </div>
 
-          <!-- View Switcher Tabs (Segmented Control) -->
-          <div class="tab-switcher">
-            <button class="tab-btn view-tab active" data-view="showcase">Full Showcase</button>
-            <button class="tab-btn view-tab" data-view="mobile">Mobile View</button>
-            <button class="tab-btn view-tab" data-view="tablet">Tablet View</button>
-            <button class="tab-btn view-tab" data-view="desktop">Desktop View</button>
+          <div class="results-actions-cluster">
+            <!-- View Switcher Tabs (Segmented Control) -->
+            <div class="tab-switcher">
+              <button class="tab-btn view-tab active" data-view="showcase">Full Showcase</button>
+              <button class="tab-btn view-tab" data-view="mobile">Mobile View</button>
+              <button class="tab-btn view-tab" data-view="tablet">Tablet View</button>
+              <button class="tab-btn view-tab" data-view="desktop">Desktop View</button>
+            </div>
+
+            <!-- Header Quick Sync Action (Admin only) -->
+            <div id="result-header-sync-actions" class="result-header-sync-actions">
+              <button type="button" id="btn-header-approve-sync" class="btn-apple-primary btn-sync-approve">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="14" height="14">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span>Approve & Upload</span>
+              </button>
+              <a id="btn-header-view-live" href="https://wwwdev.shinjiru.com.my/web-design/web-design-portfolios/" target="_blank" rel="noopener noreferrer" class="btn-apple-secondary btn-sync-live hidden">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="14" height="14">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+                <span>View Live</span>
+              </a>
+              <button type="button" id="btn-header-rollback-sync" class="btn-apple-danger btn-sync-rollback hidden" title="Rollback from Shinjiru Portfolio">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="14" height="14">
+                  <polyline points="1 4 1 10 7 10"></polyline>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                <span>Rollback</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -504,49 +536,46 @@
           </div>
         </div>
 
-        <!-- Admin Shinjiru Sync & Deployment Action Banner -->
-        <div id="result-sync-banner" class="result-sync-banner">
-          <div class="sync-banner-content">
-            <div class="sync-banner-badge" id="result-sync-badge">
-              <span class="sync-dot draft"></span>
-              <span id="result-sync-status-text">Draft (Not Synced)</span>
-            </div>
-            <div class="sync-banner-info">
-              <h4>Shinjiru Live Portfolio Sync</h4>
-              <p id="result-sync-desc">Deploy this multi-device showcase directly to Shinjiru's live Web Design Portfolio page.</p>
-            </div>
-          </div>
-          <div class="sync-banner-actions">
-            <button type="button" id="btn-result-approve-sync" class="btn-sync-action btn-sync-primary">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
-              <span>Approve & Upload to Shinjiru</span>
-            </button>
-            <button type="button" id="btn-result-rollback-sync" class="btn-sync-action btn-sync-rollback hidden">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                <polyline points="1 4 1 10 7 10"></polyline>
-                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
-              </svg>
-              <span>Rollback from Shinjiru</span>
-            </button>
-            <a id="btn-result-view-live" href="https://wwwdev.shinjiru.com.my/web-design/web-design-portfolios/" target="_blank" rel="noopener noreferrer" class="btn-sync-action btn-sync-secondary hidden">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                <polyline points="15 3 21 3 21 9"></polyline>
-                <line x1="10" y1="14" x2="21" y2="3"></line>
-              </svg>
-              <span>View on Shinjiru</span>
-            </a>
-          </div>
-        </div>
-
-        <!-- Download Action Center -->
+        <!-- Download & Deployment Action Center -->
         <div class="download-section">
-          <div class="download-title">Download Formats</div>
+          <div class="download-header-row">
+            <div class="download-title">Download Formats & Live Deployment</div>
+          </div>
           <div class="download-buttons">
+            <!-- 1. Live Deployment Card -->
+            <div id="dl-sync-card" class="dl-btn dl-sync-card highlight">
+              <div class="dl-sync-top">
+                <span class="dl-badge sync-card-badge">LIVE DEPLOYMENT</span>
+                <span id="dl-sync-card-status" class="sync-card-status draft">Draft</span>
+              </div>
+              <span class="dl-desc" id="dl-sync-card-desc">Publish to Shinjiru Web Design Portfolio</span>
+              <div class="dl-sync-actions-row">
+                <button type="button" id="btn-card-approve-sync" class="btn-card-sync-action btn-card-approve">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="14" height="14">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  <span>Approve & Upload</span>
+                </button>
+                <a id="btn-card-view-live" href="https://wwwdev.shinjiru.com.my/web-design/web-design-portfolios/" target="_blank" rel="noopener noreferrer" class="btn-card-sync-action btn-card-live hidden">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                  <span>View Live</span>
+                </a>
+                <button type="button" id="btn-card-rollback-sync" class="btn-card-sync-action btn-card-rollback hidden" title="Rollback from Shinjiru">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                  </svg>
+                  <span>Rollback</span>
+                </button>
+              </div>
+            </div>
+
             <a id="dl-showcase-webp" href="#" download class="dl-btn format-webp">
               <span class="dl-badge">WEBP</span>
               <span class="dl-desc">High-Efficiency Web Format</span>
@@ -1069,6 +1098,6 @@
   <!-- Floating Liquid Glass Toast Notifications -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
-  <script src="/static/js/app.js"></script>
+  <script src="/static/js/app.js?v=2.2.0"></script>
 </body>
 </html>

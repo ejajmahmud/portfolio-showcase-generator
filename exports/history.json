@@ -22,7 +22,16 @@
       "metadata_json": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-metadata.json",
       "zip": "/exports/dalwa7com/dalwa7-offshore-onshore-engineering-epc-green-energy-all-assets.zip"
     },
-    "created_at": null
+    "created_at": null,
+    "sync_status": "draft",
+    "synced_at": "2026-10-26T04:33:23.389641+00:00",
+    "synced_by": "admin",
+    "synced_industry": "Engineering",
+    "synced_type": "Business",
+    "synced_remote_url": "https://wwwdev.shinjiru.com.my/wp-content/uploads/portfolio-showcases/dalwa7-offshore-onshore-engineering-epc-green-energy.webp",
+    "synced_portfolio_page": "https://wwwdev.shinjiru.com.my/web-design/web-design-portfolios/",
+    "rolled_back_at": "2026-10-26T04:33:25.118170+00:00",
+    "rolled_back_by": "admin"
   },
   {
     "title": "Alawa Kundasang Homestay | Alawa Resorts",
