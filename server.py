@@ -1015,18 +1015,20 @@ async def download_plugin_endpoint(request: Request):
     Ready for direct upload to shinjiru.com.my or any WordPress site.
     """
     require_auth(request)
-    plugin_src_dir = os.path.join(BASE_DIR, "wordpress-plugin", "shinjiru-portfolio-sync")
     zip_path = os.path.join(EXPORTS_DIR, "shinjiru-portfolio-sync.zip")
-    
+    plugin_src_dir = os.path.join(BASE_DIR, "wordpress-plugin", "shinjiru-portfolio-sync")
     if not os.path.exists(plugin_src_dir):
-        raise HTTPException(status_code=404, detail="Plugin source files not found.")
-        
-    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for root, dirs, files in os.walk(plugin_src_dir):
-            for file in files:
-                abs_file = os.path.join(root, file)
-                rel_file = os.path.relpath(abs_file, os.path.dirname(plugin_src_dir))
-                zipf.write(abs_file, rel_file)
+        plugin_src_dir = os.path.join(EXPORTS_DIR, "wordpress-plugin", "shinjiru-portfolio-sync")
+    
+    if os.path.exists(plugin_src_dir):
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for root, dirs, files in os.walk(plugin_src_dir):
+                for file in files:
+                    abs_file = os.path.join(root, file)
+                    rel_file = os.path.relpath(abs_file, os.path.dirname(plugin_src_dir))
+                    zipf.write(abs_file, rel_file)
+    elif not os.path.exists(zip_path):
+        raise HTTPException(status_code=404, detail="Plugin source files or package not found.")
                 
     return FileResponse(
         zip_path,
