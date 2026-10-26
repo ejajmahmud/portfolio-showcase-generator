@@ -225,6 +225,141 @@ window.outerWidth = 1440;
 window.outerHeight = 1728;
 """
 
+LOCK_SLIDERS_JS = """() => {
+    // 1. Dispatch resize and orientation events to trigger viewport recalculation
+    try {
+        window.dispatchEvent(new Event('resize'));
+        window.dispatchEvent(new Event('orientationchange'));
+    } catch(e) {}
+
+    // 2. Swiper (Elementor Swiper, standard Swiper, [class*="swiper-container"], .swiper)
+    try {
+        const swiperEls = document.querySelectorAll('.swiper, .swiper-container, [class*="swiper-container"], .elementor-main-swiper');
+        swiperEls.forEach(el => {
+            const swiper = el.swiper || (window.jQuery && jQuery(el).data('swiper'));
+            if (swiper) {
+                if (swiper.autoplay) {
+                    try { swiper.autoplay.stop(); } catch(e) {}
+                    try { swiper.autoplay.pause(); } catch(e) {}
+                    swiper.params.autoplay = false;
+                }
+                try { swiper.updateSize(); } catch(e) {}
+                try { swiper.updateSlides(); } catch(e) {}
+                try { swiper.update(); } catch(e) {}
+                try {
+                    if (typeof swiper.slideToLoop === 'function') {
+                        swiper.slideToLoop(0, 0, false);
+                    } else if (typeof swiper.slideTo === 'function') {
+                        swiper.slideTo(0, 0, false);
+                    }
+                } catch(e) {}
+                try { swiper.updateProgress(); } catch(e) {}
+            }
+        });
+    } catch(e) {}
+
+    // 3. Slick Slider
+    try {
+        if (window.jQuery && jQuery.fn && jQuery.fn.slick) {
+            jQuery('.slick-slider').each(function() {
+                try {
+                    jQuery(this).slick('slickPause');
+                    jQuery(this).slick('slickGoTo', 0, true);
+                    jQuery(this).slick('setPosition');
+                } catch(e) {}
+            });
+        }
+    } catch(e) {}
+
+    // 4. Owl Carousel
+    try {
+        if (window.jQuery && jQuery.fn && jQuery.fn.owlCarousel) {
+            jQuery('.owl-carousel').each(function() {
+                try {
+                    jQuery(this).trigger('stop.owl.autoplay');
+                    jQuery(this).trigger('to.owl.carousel', [0, 0]);
+                    jQuery(this).trigger('refresh.owl.carousel');
+                } catch(e) {}
+            });
+        }
+    } catch(e) {}
+
+    // 5. Flickity
+    try {
+        if (window.Flickity) {
+            document.querySelectorAll('.flickity-enabled').forEach(el => {
+                try {
+                    const flkty = window.Flickity.data(el);
+                    if (flkty) {
+                        flkty.stopPlayer();
+                        flkty.select(0, false, true);
+                        flkty.resize();
+                    }
+                } catch(e) {}
+            });
+        }
+    } catch(e) {}
+
+    // 6. Splide
+    try {
+        document.querySelectorAll('.splide').forEach(el => {
+            if (el.splide) {
+                try {
+                    if (el.splide.Components && el.splide.Components.Autoplay) {
+                        el.splide.Components.Autoplay.pause();
+                    }
+                    el.splide.go(0);
+                    el.splide.refresh();
+                } catch(e) {}
+            }
+        });
+    } catch(e) {}
+
+    // 7. Slider Revolution / RevSlider
+    try {
+        if (window.jQuery && jQuery.fn && jQuery.fn.revolution) {
+            jQuery('.rev_slider').each(function() {
+                try {
+                    jQuery(this).revpause();
+                    jQuery(this).revshowslide(1);
+                } catch(e) {}
+            });
+        }
+    } catch(e) {}
+
+    // 8. Tiny Slider (tns)
+    try {
+        if (window.tns) {
+            document.querySelectorAll('.tns-slider').forEach(el => {
+                try {
+                    if (el.tns) {
+                        el.tns.pause();
+                        el.tns.goTo(0);
+                    }
+                } catch(e) {}
+            });
+        }
+    } catch(e) {}
+
+    // 9. Freeze CSS transitions on slider tracks to avoid mid-animation frames
+    try {
+        const sliderTracks = document.querySelectorAll(
+            '.swiper-wrapper, .slick-track, .owl-stage, .tns-slider, .splide__track, .rev_slider'
+        );
+        sliderTracks.forEach(track => {
+            track.style.setProperty('transition-duration', '0ms', 'important');
+            track.style.setProperty('transition-delay', '0ms', 'important');
+        });
+    } catch(e) {}
+
+    // 10. Re-enforce scroll at (0, 0)
+    try {
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+    } catch(e) {}
+}"""
+
 CHALLENGE_KEYWORDS = [
     "moment", "just a moment", "checking your browser",
     "verify", "challenge", "attention required", "cloudflare", "ddos-guard"
@@ -324,6 +459,12 @@ def wait_for_page_ready(page, max_wait=30, stabilization_delay=2.0, hide_banners
     except Exception:
         pass
 
+    # 6. Lock and stabilize sliders to Slide 0 & freeze autoplay
+    try:
+        page.evaluate(LOCK_SLIDERS_JS)
+    except Exception:
+        pass
+
     # Final guarantee: scroll at 0 and wait for any sticky headers or CSS transitions to settle
     try:
         page.evaluate("""() => {
@@ -334,7 +475,7 @@ def wait_for_page_ready(page, max_wait=30, stabilization_delay=2.0, hide_banners
     except Exception:
         pass
 
-    # 6. Stabilization pause for animations/CSS
+    # 7. Stabilization pause for animations/CSS
     if stabilization_delay > 0:
         page.wait_for_timeout(int(stabilization_delay * 1000))
 
@@ -406,12 +547,8 @@ def capture_website(
         if progress_callback:
             progress_callback("desktop_snap", "Capturing Desktop view (Retina 1440x1728 @2x)...")
         try:
-            page.evaluate("""() => {
-                window.scrollTo(0, 0);
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
-            }""")
-            page.wait_for_timeout(400)
+            page.evaluate(LOCK_SLIDERS_JS)
+            page.wait_for_timeout(350)
         except Exception:
             pass
         page.screenshot(path=desktop_path)
@@ -423,12 +560,8 @@ def capture_website(
         page.set_viewport_size({"width": 810, "height": 1080})
         wait_for_page_ready(page, max_wait=10, stabilization_delay=1.0, hide_banners=hide_banners)
         try:
-            page.evaluate("""() => {
-                window.scrollTo(0, 0);
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
-            }""")
-            page.wait_for_timeout(300)
+            page.evaluate(LOCK_SLIDERS_JS)
+            page.wait_for_timeout(350)
         except Exception:
             pass
         page.screenshot(path=tablet_path)
@@ -440,12 +573,8 @@ def capture_website(
         page.set_viewport_size({"width": 440, "height": 956})
         wait_for_page_ready(page, max_wait=10, stabilization_delay=1.0, hide_banners=hide_banners)
         try:
-            page.evaluate("""() => {
-                window.scrollTo(0, 0);
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
-            }""")
-            page.wait_for_timeout(300)
+            page.evaluate(LOCK_SLIDERS_JS)
+            page.wait_for_timeout(350)
         except Exception:
             pass
         page.screenshot(path=mobile_path)
