@@ -60,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const typeSelect = document.getElementById('project-type');
   const mobileFinishSelect = document.getElementById('mobile-finish');
   const tabletFinishSelect = document.getElementById('tablet-finish');
-  const bgColorSelect = document.getElementById('bg-color');
   const shadowSelect = document.getElementById('shadow-intensity');
   const delaySelect = document.getElementById('capture-delay');
   const browserModeSelect = document.getElementById('browser-mode');
@@ -1138,7 +1137,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeSelect) typeSelect.disabled = true;
       if (mobileFinishSelect) mobileFinishSelect.disabled = true;
       if (tabletFinishSelect) tabletFinishSelect.disabled = true;
-      if (bgColorSelect) bgColorSelect.disabled = true;
       if (shadowSelect) shadowSelect.disabled = true;
       if (delaySelect) delaySelect.disabled = true;
       if (generateBtn) {
@@ -1744,7 +1742,7 @@ document.addEventListener('DOMContentLoaded', () => {
           type: typeSelect ? typeSelect.value : null,
           mobile_finish: mobileFinishSelect ? mobileFinishSelect.value : 'deep-blue',
           tablet_finish: tabletFinishSelect ? tabletFinishSelect.value : 'space-black',
-          bg_color: bgColorSelect ? bgColorSelect.value : 'transparent',
+          bg_color: 'transparent',
           shadow_intensity: shadowSelect ? shadowSelect.value : 'normal',
           delay: delaySelect ? parseFloat(delaySelect.value) : 2.5,
           headless: browserModeSelect ? (browserModeSelect.value === 'headless') : true
@@ -1828,7 +1826,7 @@ document.addEventListener('DOMContentLoaded', () => {
           type: typeSelect ? typeSelect.value : null,
           mobile_finish: mobileFinishSelect ? mobileFinishSelect.value : 'deep-blue',
           tablet_finish: tabletFinishSelect ? tabletFinishSelect.value : 'space-black',
-          bg_color: bgColorSelect ? bgColorSelect.value : 'transparent',
+          bg_color: 'transparent',
           shadow_intensity: shadowSelect ? shadowSelect.value : 'normal',
           delay: delaySelect ? parseFloat(delaySelect.value) : 2.0,
           headless: browserModeSelect ? (browserModeSelect.value === 'headless') : true

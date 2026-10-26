@@ -97,8 +97,8 @@ def compose_showcase(
     Composites Desktop, Mobile (iPhone 17 Pro Max), and Tablet into the exact
     portfolio showcase layout matching the agency portfolio standard.
     """
-    parsed_bg = parse_color(bg_color)
-    canvas = Image.new('RGBA', (canvas_w, canvas_h), parsed_bg)
+    # Mandatory: Zero canvas background, 100% complete transparency always
+    canvas = Image.new('RGBA', (canvas_w, canvas_h), (0, 0, 0, 0))
     
     # Adjust shadow opacity based on intensity setting
     shadow_alpha_base = 90

@@ -82,7 +82,7 @@ def generate_portfolio_assets(
         raw_desk,
         framed_mob,
         framed_tab,
-        bg_color=bg_color,
+        bg_color="transparent",
         shadow_intensity=shadow_intensity
     )
     
