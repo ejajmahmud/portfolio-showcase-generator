@@ -352,6 +352,24 @@ document.addEventListener('DOMContentLoaded', () => {
             resultUrl.textContent = updated.url || '';
             resultUrl.href = updated.url || '#';
           }
+          const catBadge = document.getElementById('result-category-badge');
+          const typeBadge = document.getElementById('result-type-badge');
+          if (catBadge) {
+            if (updated.category) {
+              catBadge.textContent = updated.category;
+              catBadge.classList.remove('hidden');
+            } else {
+              catBadge.classList.add('hidden');
+            }
+          }
+          if (typeBadge) {
+            if (updated.type) {
+              typeBadge.textContent = updated.type;
+              typeBadge.classList.remove('hidden');
+            } else {
+              typeBadge.classList.add('hidden');
+            }
+          }
         }
 
         closeEditModal();
@@ -450,12 +468,48 @@ document.addEventListener('DOMContentLoaded', () => {
     `).join('');
   }
 
+  function updateSyncProgress(stepNum, percent, message) {
+    const tracker = document.getElementById('sync-progress-tracker');
+    const bar = document.getElementById('sync-progress-bar');
+    const msg = document.getElementById('sync-progress-status-msg');
+    if (tracker) tracker.classList.remove('hidden');
+    if (bar) bar.style.width = `${percent}%`;
+    if (msg) msg.textContent = message;
+
+    for (let i = 1; i <= 4; i++) {
+      const stepEl = document.getElementById(`p-step-${i}`);
+      if (!stepEl) continue;
+      if (i < stepNum) {
+        stepEl.className = 'sync-step completed';
+      } else if (i === stepNum) {
+        stepEl.className = 'sync-step active';
+      } else {
+        stepEl.className = 'sync-step';
+      }
+    }
+  }
+
+  function resetSyncProgress() {
+    const tracker = document.getElementById('sync-progress-tracker');
+    const bar = document.getElementById('sync-progress-bar');
+    const msg = document.getElementById('sync-progress-status-msg');
+    if (tracker) tracker.classList.add('hidden');
+    if (bar) bar.style.width = '0%';
+    if (msg) msg.textContent = 'Initializing deployment handshake...';
+    for (let i = 1; i <= 4; i++) {
+      const stepEl = document.getElementById(`p-step-${i}`);
+      if (stepEl) stepEl.className = i === 1 ? 'sync-step active' : 'sync-step';
+    }
+  }
+
   function openApproveSyncModal(item) {
     if (!approveSyncModal || !item) return;
     if (syncModalAlert) {
       syncModalAlert.className = 'modal-alert hidden';
       syncModalAlert.textContent = '';
     }
+    resetSyncProgress();
+
     if (syncShowcaseSlug) syncShowcaseSlug.value = item.slug || '';
     if (syncInputTitle) syncInputTitle.value = item.title || item.slug || '';
     if (syncInputUrl) syncInputUrl.value = item.url || '';
@@ -480,6 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function closeApproveSyncModal() {
     if (approveSyncModal) approveSyncModal.classList.add('hidden');
+    resetSyncProgress();
   }
 
   if (closeSyncModalBtn) closeSyncModalBtn.addEventListener('click', closeApproveSyncModal);
@@ -517,11 +572,17 @@ document.addEventListener('DOMContentLoaded', () => {
             <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
             <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
           </svg>
-          <span>Uploading & Syncing...</span>
+          <span>Deploying Live...</span>
         `;
       }
+      if (cancelSyncModalBtn) cancelSyncModalBtn.disabled = true;
+
+      // Phase 1: Encoding Assets
+      updateSyncProgress(1, 25, 'Encoding WebP asset and preparing payload...');
 
       try {
+        // Fast server handshake
+        updateSyncProgress(2, 50, 'Authenticating with Shinjiru WordPress REST API...');
         const res = await fetch('/api/sync/approve-and-publish', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -534,53 +595,80 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let updated = data.showcase;
 
-        // Dual-Path Resilient Architecture: If server-side was blocked by firewall, client browser executes direct sync
+        // Dual-Path Resilient Architecture: If server-side was firewalled, client browser executes direct sync
         if (data.needs_client_sync) {
-          const wpPayload = Object.assign({}, data.payload, { sync_token: data.secret_token });
-          const wpRes = await fetch(data.sync_endpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + data.secret_token,
-              'X-Shinjiru-Sync-Token': data.secret_token
-            },
-            body: JSON.stringify(wpPayload)
-          });
-          const wpData = await wpRes.json();
-          if (!wpRes.ok || !wpData.success) {
-            throw new Error(wpData.message || 'WordPress sync rejected by remote site.');
-          }
+          updateSyncProgress(3, 75, 'Deploying WebP card & registering taxonomy on Shinjiru...');
 
-          // Confirm publication status to Studio backend
-          const confirmRes = await fetch('/api/sync/confirm-published', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              slug: slug,
-              title: payload.title,
-              industry: payload.industry,
-              website_type: payload.website_type,
-              remote_image_url: wpData.item ? wpData.item.image_url : '',
-              portfolio_page_url: data.portfolio_page_url
-            })
-          });
-          const confirmData = await confirmRes.json();
-          updated = confirmData.showcase || updated;
+          const wpPayload = Object.assign({}, data.payload, { sync_token: data.secret_token });
+          
+          // Timeout guard using AbortController (15 seconds max) so user never gets frozen
+          const abortCtrl = new AbortController();
+          const abortTimeout = setTimeout(() => abortCtrl.abort(), 15000);
+
+          try {
+            const wpRes = await fetch(data.sync_endpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + data.secret_token,
+                'X-Shinjiru-Sync-Token': data.secret_token
+              },
+              body: JSON.stringify(wpPayload),
+              signal: abortCtrl.signal
+            });
+            clearTimeout(abortTimeout);
+
+            const wpData = await wpRes.json();
+            if (!wpRes.ok || !wpData.success) {
+              throw new Error(wpData.message || 'WordPress sync rejected by remote site.');
+            }
+
+            // Confirm publication status to Studio backend
+            updateSyncProgress(3, 90, 'Finalizing deployment verification in Studio...');
+            const confirmRes = await fetch('/api/sync/confirm-published', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                slug: slug,
+                title: payload.title,
+                industry: payload.industry,
+                website_type: payload.website_type,
+                remote_image_url: wpData.item ? wpData.item.image_url : '',
+                portfolio_page_url: data.portfolio_page_url
+              })
+            });
+            const confirmData = await confirmRes.json();
+            updated = confirmData.showcase || updated;
+          } catch (fetchErr) {
+            clearTimeout(abortTimeout);
+            if (fetchErr.name === 'AbortError') {
+              throw new Error('Connection to Shinjiru timed out (15s). Please check your target site URL in Settings.');
+            }
+            throw fetchErr;
+          }
         }
 
+        // Phase 4: Verified live
+        updateSyncProgress(4, 100, 'Deployment Verified! Live on Shinjiru Web Design Portfolio.');
+
+        // Update in-memory history cache
         const idx = allHistory.findIndex(h => h.slug === slug);
         if (idx !== -1) {
-          allHistory[idx] = { ...allHistory[idx], ...updated };
+          allHistory[idx] = { ...allHistory[idx], ...updated, category: payload.industry, type: payload.website_type };
         }
         const fIdx = filteredHistory.findIndex(h => h.slug === slug);
         if (fIdx !== -1) {
-          filteredHistory[fIdx] = { ...filteredHistory[fIdx], ...updated };
+          filteredHistory[fIdx] = { ...filteredHistory[fIdx], ...updated, category: payload.industry, type: payload.website_type };
         }
 
         if (currentResultData && currentResultData.slug === slug) {
-          currentResultData = { ...currentResultData, ...updated };
+          currentResultData = { ...currentResultData, ...updated, category: payload.industry, type: payload.website_type };
           updateResultSyncUI(currentResultData);
+          displayResult(currentResultData, false);
         }
+
+        // Brief delay so user sees the 100% complete state before modal closes
+        await new Promise(r => setTimeout(r, 600));
 
         closeApproveSyncModal();
         renderHistory();
@@ -590,6 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
           syncModalAlert.className = 'modal-alert error';
           syncModalAlert.textContent = err.message;
         }
+        resetSyncProgress();
         showToast(err.message, 'error', 4500);
       } finally {
         if (submitApproveSyncBtn) {
@@ -603,6 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span>Approve & Deploy to Shinjiru</span>
           `;
         }
+        if (cancelSyncModalBtn) cancelSyncModalBtn.disabled = false;
       }
     });
   }
@@ -1654,7 +1744,7 @@ document.addEventListener('DOMContentLoaded', () => {
           type: typeSelect ? typeSelect.value : null,
           mobile_finish: mobileFinishSelect ? mobileFinishSelect.value : 'deep-blue',
           tablet_finish: tabletFinishSelect ? tabletFinishSelect.value : 'space-black',
-          bg_color: bgColorSelect ? bgColorSelect.value : '#E5E5E5',
+          bg_color: bgColorSelect ? bgColorSelect.value : 'transparent',
           shadow_intensity: shadowSelect ? shadowSelect.value : 'normal',
           delay: delaySelect ? parseFloat(delaySelect.value) : 2.5,
           headless: browserModeSelect ? (browserModeSelect.value === 'headless') : true
@@ -1738,7 +1828,7 @@ document.addEventListener('DOMContentLoaded', () => {
           type: typeSelect ? typeSelect.value : null,
           mobile_finish: mobileFinishSelect ? mobileFinishSelect.value : 'deep-blue',
           tablet_finish: tabletFinishSelect ? tabletFinishSelect.value : 'space-black',
-          bg_color: bgColorSelect ? bgColorSelect.value : '#E5E5E5',
+          bg_color: bgColorSelect ? bgColorSelect.value : 'transparent',
           shadow_intensity: shadowSelect ? shadowSelect.value : 'normal',
           delay: delaySelect ? parseFloat(delaySelect.value) : 2.0,
           headless: browserModeSelect ? (browserModeSelect.value === 'headless') : true
@@ -1792,6 +1882,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resultUrl) {
       resultUrl.textContent = data.url;
       resultUrl.href = data.url;
+    }
+
+    // Reflect Category and Type Badges perfectly on Result Card
+    const catBadge = document.getElementById('result-category-badge');
+    const typeBadge = document.getElementById('result-type-badge');
+    const categoryName = data.category || data.synced_industry || '';
+    const typeName = data.type || data.synced_type || '';
+
+    if (catBadge) {
+      if (categoryName) {
+        catBadge.textContent = categoryName;
+        catBadge.classList.remove('hidden');
+      } else {
+        catBadge.classList.add('hidden');
+      }
+    }
+    if (typeBadge) {
+      if (typeName) {
+        typeBadge.textContent = typeName;
+        typeBadge.classList.remove('hidden');
+      } else {
+        typeBadge.classList.add('hidden');
+      }
     }
 
     // Default to Full Showcase view tab
@@ -2044,8 +2157,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ${isSynced 
               ? `<span class="badge-tag sync-live" title="Live on Shinjiru Web Design Portfolio">● Live on Shinjiru</span>` 
               : `<span class="badge-tag sync-draft" title="Draft (Not uploaded to Shinjiru)">Draft</span>`}
-            ${item.category ? `<span class="badge-tag">${escapeHtml(item.category)}</span>` : ''}
-            ${item.type ? `<span class="badge-tag accent">${escapeHtml(item.type)}</span>` : ''}
+            ${(item.category || item.synced_industry) ? `<span class="badge-tag">${escapeHtml(item.category || item.synced_industry)}</span>` : ''}
+            ${(item.type || item.synced_type) ? `<span class="badge-tag accent">${escapeHtml(item.type || item.synced_type)}</span>` : ''}
           </div>
         </div>
       </div>

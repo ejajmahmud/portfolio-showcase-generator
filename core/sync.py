@@ -44,8 +44,94 @@ SHINJIRU_INDUSTRIES = [
 
 SHINJIRU_WEBSITE_TYPES = [
     "Business",
-    "E-commerce"
+    "E-commerce",
+    "Consultancy"
 ]
+
+INDUSTRY_NORMALIZATION = {
+    "food & baverage": "Food & Drinks",
+    "food & beverage": "Food & Drinks",
+    "food and beverage": "Food & Drinks",
+    "food & drinks": "Food & Drinks",
+    "food": "Food & Drinks",
+    "logistic": "Logistics",
+    "logistics": "Logistics",
+    "argiculture & animals": "Argiculture & Animals",
+    "agriculture & animals": "Argiculture & Animals",
+    "agriculture": "Argiculture & Animals",
+    "argiculture": "Argiculture & Animals",
+    "automotive & transportation": "Automotive & Transportation",
+    "automotive": "Automotive & Transportation",
+    "transportation": "Automotive & Transportation",
+    "business & services": "Business & Services",
+    "creative & design": "Creative & Design",
+    "creative": "Creative & Design",
+    "design": "Creative & Design",
+    "consultancy": "Consultancy",
+    "community": "Community",
+    "education": "Education",
+    "engineering": "Engineering",
+    "events & entertainment": "Events & Entertainment",
+    "events": "Events & Entertainment",
+    "entertainment": "Events & Entertainment",
+    "factory & machinery": "Factory & Machinery",
+    "factory": "Factory & Machinery",
+    "machinery": "Factory & Machinery",
+    "fashion & beauty": "Fashion & Beauty",
+    "fashion": "Fashion & Beauty",
+    "beauty": "Fashion & Beauty",
+    "film & tv": "Film & TV",
+    "film": "Film & TV",
+    "finance & law": "Finance & Law",
+    "finance": "Finance & Law",
+    "law": "Finance & Law",
+    "health & medical": "Health & Medical",
+    "health": "Health & Medical",
+    "medical": "Health & Medical",
+    "music & bands": "Music & Bands",
+    "music": "Music & Bands",
+    "oils & gas & marine": "Oils & Gas & Marine",
+    "oil & gas": "Oils & Gas & Marine",
+    "oils & gas": "Oils & Gas & Marine",
+    "printing": "Printing",
+    "real estate & construction": "Real Estate & Construction",
+    "real estate": "Real Estate & Construction",
+    "construction": "Real Estate & Construction",
+    "sport & fitness": "Sport & Fitness",
+    "sports": "Sport & Fitness",
+    "fitness": "Sport & Fitness",
+    "technology & apps": "Technology & Apps",
+    "technology": "Technology & Apps",
+    "tech": "Technology & Apps"
+}
+
+def normalize_industry(cat: Optional[str]) -> str:
+    """
+    Normalizes any user-typed or imported category to match Shinjiru's exact 22 filter options.
+    """
+    if not cat:
+        return "Business & Services"
+    raw = cat.strip()
+    cleaned = raw.lower()
+    if raw in SHINJIRU_INDUSTRIES:
+        return raw
+    for pattern, target in INDUSTRY_NORMALIZATION.items():
+        if cleaned == pattern or cleaned.startswith(pattern) or pattern in cleaned:
+            return target
+    return raw
+
+def normalize_website_type(wt: Optional[str]) -> str:
+    """
+    Normalizes website type to match Shinjiru's filter options (Business, E-commerce, Consultancy).
+    """
+    if not wt:
+        return "Business"
+    cleaned = wt.strip().lower()
+    if "e-comm" in cleaned or "ecommerce" in cleaned or "shop" in cleaned or "store" in cleaned:
+        return "E-commerce"
+    if "consult" in cleaned:
+        return "Consultancy"
+    return "Business"
 
 DEFAULT_SETTINGS = {
     "target_site": "https://wwwdev.shinjiru.com.my",
@@ -135,11 +221,14 @@ def sync_showcase_to_shinjiru(
         webp_bytes = img_f.read()
         b64_str = base64.b64encode(webp_bytes).decode("utf-8")
 
+    norm_industry = normalize_industry(industry)
+    norm_type = normalize_website_type(website_type)
+
     payload = {
         "title": title.strip(),
         "url": url.strip(),
-        "industry": industry.strip(),
-        "website_type": website_type.strip(),
+        "industry": norm_industry,
+        "website_type": norm_type,
         "slug": slug.strip(),
         "image_base64": b64_str
     }
@@ -154,7 +243,7 @@ def sync_showcase_to_shinjiru(
         }
     )
 
-    with urllib.request.urlopen(req, context=_get_ssl_context(), timeout=30) as resp:
+    with urllib.request.urlopen(req, context=_get_ssl_context(), timeout=3) as resp:
         res = json.loads(resp.read().decode("utf-8"))
         res["portfolio_page_url"] = settings.get("portfolio_page_url")
         return res

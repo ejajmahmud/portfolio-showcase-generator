@@ -19,9 +19,10 @@ from PIL import Image, ImageDraw, ImageFilter
 def parse_color(color_input):
     """
     Parses hex string ('#E5E5E5', 'transparent') or tuple/list into RGBA tuple.
+    Defaults to transparent (0, 0, 0, 0).
     """
     if color_input is None:
-        return (229, 229, 229, 255)
+        return (0, 0, 0, 0)
     if str(color_input).lower() == 'transparent':
         return (0, 0, 0, 0)
     if isinstance(color_input, (tuple, list)):
@@ -30,7 +31,7 @@ def parse_color(color_input):
         return tuple(color_input)
     if isinstance(color_input, str):
         c = color_input.strip().lstrip('#')
-        if c.lower() == 'transparent':
+        if c.lower() == 'transparent' or not c:
             return (0, 0, 0, 0)
         if len(c) == 6:
             r = int(c[0:2], 16)
@@ -43,34 +44,42 @@ def parse_color(color_input):
             b = int(c[4:6], 16)
             a = int(c[6:8], 16)
             return (r, g, b, a)
-    return (229, 229, 229, 255)
+    return (0, 0, 0, 0)
 
 def create_drop_shadow(image, offset=(0, 22), blur_radius=34, shadow_color=(0, 0, 0, 90)):
     """
     Generates a realistic multi-tier drop shadow underneath an RGBA image.
-    Tier 1: Ambient soft blur for broad depth.
+    Tier 1: Ambient soft blur with outward bleed for broad depth.
     Tier 2: Contact shadow for crisp object grounding.
     """
     w, h = image.size
-    pad = blur_radius * 2 + max(abs(offset[0]), abs(offset[1])) + 40
+    ox, oy = offset
+    pad = blur_radius * 2 + max(abs(ox), abs(oy)) + 40
     canvas = Image.new('RGBA', (w + pad * 2, h + pad * 2), (0, 0, 0, 0))
-    
     alpha = image.split()[-1]
     
-    # Ambient shadow (soft diffuse)
-    amb_mask = alpha.filter(ImageFilter.GaussianBlur(blur_radius))
-    amb_shadow = Image.new('RGBA', (w, h), shadow_color)
-    amb_shadow.putalpha(amb_mask)
+    # Ambient shadow mask (padded before blur to naturally bleed outwards)
+    amb_pad_mask = Image.new('L', (w + pad * 2, h + pad * 2), 0)
+    amb_pad_mask.paste(alpha, (pad, pad))
+    amb_blurred = amb_pad_mask.filter(ImageFilter.GaussianBlur(blur_radius))
+    if shadow_color[3] < 255:
+        amb_blurred = amb_blurred.point(lambda p: int(p * (shadow_color[3] / 255.0)))
+    amb_shadow = Image.new('RGBA', (w + pad * 2, h + pad * 2), (0, 0, 0, 0))
+    amb_shadow.putalpha(amb_blurred)
     
-    # Contact shadow (closer, sharper)
+    # Contact shadow (closer, sharper grounding)
     con_blur = max(3, blur_radius // 4)
-    con_mask = alpha.filter(ImageFilter.GaussianBlur(con_blur))
-    con_shadow = Image.new('RGBA', (w, h), (0, 0, 0, int(shadow_color[3] * 0.95)))
-    con_shadow.putalpha(con_mask)
+    con_pad_mask = Image.new('L', (w + pad * 2, h + pad * 2), 0)
+    con_pad_mask.paste(alpha, (pad, pad))
+    con_blurred = con_pad_mask.filter(ImageFilter.GaussianBlur(con_blur))
+    con_alpha_target = min(255, int(shadow_color[3] * 0.95))
+    con_blurred = con_blurred.point(lambda p: int(p * (con_alpha_target / 255.0)))
+    con_shadow = Image.new('RGBA', (w + pad * 2, h + pad * 2), (0, 0, 0, 0))
+    con_shadow.putalpha(con_blurred)
     
-    ox, oy = offset
-    canvas.paste(amb_shadow, (pad + ox, pad + oy), amb_shadow)
-    canvas.paste(con_shadow, (pad + ox // 2, pad + oy // 2 + 3), con_shadow)
+    # Composite shadows onto padded canvas with offsets, then paste original device image
+    canvas.alpha_composite(amb_shadow, (ox, oy))
+    canvas.alpha_composite(con_shadow, (ox // 2, oy // 2 + 2))
     canvas.paste(image, (pad, pad), image)
     
     return canvas, pad
@@ -81,7 +90,7 @@ def compose_showcase(
     framed_tablet_img,
     canvas_w=2000,
     canvas_h=2400,
-    bg_color=(229, 229, 229, 255),
+    bg_color="transparent",
     shadow_intensity="normal"
 ):
     """

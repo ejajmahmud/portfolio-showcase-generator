@@ -293,9 +293,9 @@
                 <div class="opt-field">
                   <label for="bg-color">Canvas Background</label>
                   <select id="bg-color">
-                    <option value="#E5E5E5" selected>Standard (#E5E5E5)</option>
+                    <option value="transparent" selected>Transparent (PNG & WebP - Agency Standard)</option>
                     <option value="#ffffff">Pure White (#FFFFFF)</option>
-                    <option value="transparent">Transparent (PNG & WebP)</option>
+                    <option value="#E5E5E5">Light Gray (#E5E5E5)</option>
                     <option value="#f8fafc">Slate White (#F8FAFC)</option>
                     <option value="#0f172a">Dark Navy (#0F172A)</option>
                   </select>
@@ -779,7 +779,15 @@
               </div>
             </div>
 
-            <div class="modal-form-actions">
+            <div class="modal-form-actions" style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+              <a href="/api/sync/download-plugin" class="btn-download-plugin" download="shinjiru-portfolio-sync.zip" title="Download WordPress Plugin to install on shinjiru.com.my" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 16px; border-radius: 980px; background: rgba(0, 113, 227, 0.08); color: var(--apple-blue); font-size: 13px; font-weight: 600; border: 1px solid rgba(0, 113, 227, 0.2);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Download Plugin (.zip)</span>
+              </a>
               <button type="submit" id="save-sync-settings-btn" class="btn-create-user">Save Configuration</button>
             </div>
           </form>
@@ -955,6 +963,31 @@
             <div class="guarantee-text">
               <strong>1-Click Reversible Sync:</strong> Automatically uploads the showcase as WebP, renders into Shinjiru's live portfolio card grid, and preserves complete 1-click rollback capability.
             </div>
+          </div>
+
+          <div id="sync-progress-tracker" class="sync-progress-tracker hidden">
+            <div class="sync-progress-bar-wrap">
+              <div id="sync-progress-bar" class="sync-progress-bar-inner"></div>
+            </div>
+            <div class="sync-progress-steps">
+              <div class="sync-step active" id="p-step-1">
+                <span class="step-indicator">1</span>
+                <span class="step-text">Encode</span>
+              </div>
+              <div class="sync-step" id="p-step-2">
+                <span class="step-indicator">2</span>
+                <span class="step-text">Connect</span>
+              </div>
+              <div class="sync-step" id="p-step-3">
+                <span class="step-indicator">3</span>
+                <span class="step-text">Deploy</span>
+              </div>
+              <div class="sync-step" id="p-step-4">
+                <span class="step-indicator">4</span>
+                <span class="step-text">Live</span>
+              </div>
+            </div>
+            <div id="sync-progress-status-msg" class="sync-progress-msg">Initializing deployment handshake...</div>
           </div>
 
           <div class="modal-form-actions">

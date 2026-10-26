@@ -20,6 +20,7 @@ from .capture import capture_website
 from .framer import frame_iphone, frame_tablet
 from .compositor import compose_showcase
 from .exporter import export_all_formats
+from .sync import normalize_industry, normalize_website_type
 
 def slugify(text):
     text = re.sub(r'[^\w\s-]', '', text).strip().lower()
@@ -33,7 +34,7 @@ def generate_portfolio_assets(
     website_type=None,
     mobile_finish="deep-blue",
     tablet_finish="space-black",
-    bg_color="#E5E5E5",
+    bg_color="transparent",
     shadow_intensity="normal",
     delay=2.0,
     hide_banners=True,
@@ -89,12 +90,16 @@ def generate_portfolio_assets(
     if progress_callback:
         progress_callback("exporting", "Exporting WebP, PNG, JPG, and ZIP bundle...")
         
+    # Normalize category and website type to match Shinjiru portfolio taxonomy
+    norm_category = normalize_industry(category) if category else ""
+    norm_type = normalize_website_type(website_type) if website_type else "Business"
+
     meta_info = {
         "title": name,
         "slug": slug,
         "url": url,
-        "category": category or "",
-        "type": website_type or ""
+        "category": norm_category,
+        "type": norm_type
     }
     exports = export_all_formats(
         showcase_img=showcase_img,
@@ -103,7 +108,7 @@ def generate_portfolio_assets(
         desktop_img=raw_desk,
         output_dir=output_dir,
         base_name=slug,
-        bg_for_jpg=(229, 229, 229),
+        bg_for_jpg=(255, 255, 255),
         metadata=meta_info
     )
     
@@ -114,8 +119,8 @@ def generate_portfolio_assets(
         "title": name,
         "slug": slug,
         "url": url,
-        "category": category or "",
-        "type": website_type or "",
+        "category": norm_category,
+        "type": norm_type,
         "exports": exports,
         "output_dir": output_dir
     }

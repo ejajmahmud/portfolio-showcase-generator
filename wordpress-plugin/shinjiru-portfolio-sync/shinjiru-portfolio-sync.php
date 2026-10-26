@@ -50,6 +50,9 @@ class Shinjiru_Portfolio_Sync {
 
         // Handle early OPTIONS preflight requests for our endpoints
         add_action('init', array($this, 'handle_early_cors_preflight'), 5);
+
+        // Register shortcode for flexible placement in Elementor, Gutenberg, or any page
+        add_shortcode('shinjiru_portfolio_showcase', array($this, 'shortcode_render_cards'));
     }
 
     /**
@@ -213,8 +216,10 @@ class Shinjiru_Portfolio_Sync {
 
         $title = sanitize_text_field($params['title'] ?? '');
         $url = esc_url_raw($params['url'] ?? '');
-        $industry = sanitize_text_field($params['industry'] ?? 'Business & Services');
-        $website_type = sanitize_text_field($params['website_type'] ?? 'Business');
+        $raw_industry = sanitize_text_field($params['industry'] ?? 'Business & Services');
+        $raw_type = sanitize_text_field($params['website_type'] ?? 'Business');
+        $industry = self::normalize_industry($raw_industry);
+        $website_type = self::normalize_website_type($raw_type);
         $slug = sanitize_title($params['slug'] ?? ($title ? sanitize_title($title) : ''));
         $image_base64 = $params['image_base64'] ?? '';
         $image_url_param = esc_url_raw($params['image_url'] ?? '');
@@ -427,7 +432,93 @@ class Shinjiru_Portfolio_Sync {
     }
 
     /**
-     * Template Output Buffer Injection
+     * Shortcode handler for [shinjiru_portfolio_showcase]
+     */
+    public function shortcode_render_cards($atts = array()) {
+        return self::render_synced_cards_html();
+    }
+
+    /**
+     * Category Taxonomy Normalization: Guarantees 100% exact match with Shinjiru filter dropdowns
+     */
+    public static function normalize_industry($industry) {
+        $map = array(
+            'food & baverage' => 'Food & Drinks',
+            'food & beverage' => 'Food & Drinks',
+            'food and beverage' => 'Food & Drinks',
+            'food & drinks' => 'Food & Drinks',
+            'food' => 'Food & Drinks',
+            'logistic' => 'Logistics',
+            'logistics' => 'Logistics',
+            'argiculture & animals' => 'Argiculture & Animals',
+            'agriculture & animals' => 'Argiculture & Animals',
+            'agriculture' => 'Argiculture & Animals',
+            'argiculture' => 'Argiculture & Animals',
+            'automotive & transportation' => 'Automotive & Transportation',
+            'automotive' => 'Automotive & Transportation',
+            'transportation' => 'Automotive & Transportation',
+            'business & services' => 'Business & Services',
+            'creative & design' => 'Creative & Design',
+            'creative' => 'Creative & Design',
+            'design' => 'Creative & Design',
+            'consultancy' => 'Consultancy',
+            'community' => 'Community',
+            'education' => 'Education',
+            'engineering' => 'Engineering',
+            'events & entertainment' => 'Events & Entertainment',
+            'events' => 'Events & Entertainment',
+            'entertainment' => 'Events & Entertainment',
+            'factory & machinery' => 'Factory & Machinery',
+            'factory' => 'Factory & Machinery',
+            'machinery' => 'Factory & Machinery',
+            'fashion & beauty' => 'Fashion & Beauty',
+            'fashion' => 'Fashion & Beauty',
+            'beauty' => 'Fashion & Beauty',
+            'film & tv' => 'Film & TV',
+            'film' => 'Film & TV',
+            'finance & law' => 'Finance & Law',
+            'finance' => 'Finance & Law',
+            'law' => 'Finance & Law',
+            'health & medical' => 'Health & Medical',
+            'health' => 'Health & Medical',
+            'medical' => 'Health & Medical',
+            'music & bands' => 'Music & Bands',
+            'music' => 'Music & Bands',
+            'oils & gas & marine' => 'Oils & Gas & Marine',
+            'oil & gas' => 'Oils & Gas & Marine',
+            'printing' => 'Printing',
+            'real estate & construction' => 'Real Estate & Construction',
+            'real estate' => 'Real Estate & Construction',
+            'construction' => 'Real Estate & Construction',
+            'sport & fitness' => 'Sport & Fitness',
+            'sports' => 'Sport & Fitness',
+            'fitness' => 'Sport & Fitness',
+            'technology & apps' => 'Technology & Apps',
+            'technology' => 'Technology & Apps',
+            'tech' => 'Technology & Apps'
+        );
+        $clean = strtolower(trim((string)$industry));
+        foreach ($map as $key => $target) {
+            if ($clean === $key || strpos($clean, $key) !== false) {
+                return $target;
+            }
+        }
+        return trim((string)$industry) ?: 'Business & Services';
+    }
+
+    public static function normalize_website_type($type) {
+        $clean = strtolower(trim((string)$type));
+        if (strpos($clean, 'e-comm') !== false || strpos($clean, 'ecommerce') !== false || strpos($clean, 'shop') !== false) {
+            return 'E-commerce';
+        }
+        if (strpos($clean, 'consult') !== false) {
+            return 'Consultancy';
+        }
+        return 'Business';
+    }
+
+    /**
+     * Template Output Buffer Injection: Works seamlessly on both shinjiru.com.my and dev environments
      */
     public function setup_template_injection() {
         if (is_admin()) {
@@ -435,7 +526,7 @@ class Shinjiru_Portfolio_Sync {
         }
 
         $uri = $_SERVER['REQUEST_URI'] ?? '';
-        if (strpos($uri, 'portfolio') !== false || is_page_template('page-web-design-portfolio.php')) {
+        if (strpos($uri, 'portfolio') !== false || strpos($uri, 'web-design') !== false || is_page_template('page-web-design-portfolio.php')) {
             ob_start(array($this, 'filter_portfolio_page_output'));
         }
     }
@@ -450,11 +541,20 @@ class Shinjiru_Portfolio_Sync {
             return $html;
         }
 
+        // Resilient regex pattern matching standard Shinjiru row container across all themes
+        if (preg_match('/<div\s+class=["\'][^"\']*row\s+pt-4\s+pb-4[^"\']*["\'][^>]*>/i', $html, $matches, PREG_OFFSET_CAPTURE)) {
+            $matched_str = $matches[0][0];
+            $matched_pos = $matches[0][1];
+            $insert_pos = $matched_pos + strlen($matched_str);
+            return substr($html, 0, $insert_pos) . "\n" . $cards_html . substr($html, $insert_pos);
+        }
+
+        // Direct string match fallback
         $target = '<div class="row pt-4 pb-4">';
         $pos = strpos($html, $target);
         if ($pos !== false) {
             $insert_pos = $pos + strlen($target);
-            $html = substr($html, 0, $insert_pos) . "\n" . $cards_html . substr($html, $insert_pos);
+            return substr($html, 0, $insert_pos) . "\n" . $cards_html . substr($html, $insert_pos);
         }
 
         return $html;

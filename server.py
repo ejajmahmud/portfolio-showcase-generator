@@ -20,6 +20,7 @@ import shutil
 import asyncio
 import time
 import uuid
+import zipfile
 import mimetypes
 from datetime import datetime, timezone
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException, Depends
@@ -58,6 +59,8 @@ from core.auth import (
 from core.sync import (
     SHINJIRU_INDUSTRIES,
     SHINJIRU_WEBSITE_TYPES,
+    normalize_industry,
+    normalize_website_type,
     get_sync_settings,
     save_sync_settings,
     check_sync_health,
@@ -143,7 +146,7 @@ class GenerateRequest(BaseModel):
     type: Optional[str] = None
     mobile_finish: Optional[str] = "deep-blue"
     tablet_finish: Optional[str] = "space-black"
-    bg_color: Optional[str] = "#E5E5E5"
+    bg_color: Optional[str] = "transparent"
     shadow_intensity: Optional[str] = "normal"
     delay: Optional[float] = 2.0
     hide_banners: Optional[bool] = True
@@ -155,7 +158,7 @@ class BatchGenerateRequest(BaseModel):
     type: Optional[str] = None
     mobile_finish: Optional[str] = "deep-blue"
     tablet_finish: Optional[str] = "space-black"
-    bg_color: Optional[str] = "#E5E5E5"
+    bg_color: Optional[str] = "transparent"
     shadow_intensity: Optional[str] = "normal"
     delay: Optional[float] = 2.5
     headless: Optional[bool] = True
@@ -438,7 +441,7 @@ async def generate_showcase(req: GenerateRequest, request: Request):
             website_type=req.type,
             mobile_finish=req.mobile_finish or "deep-blue",
             tablet_finish=req.tablet_finish or "space-black",
-            bg_color=req.bg_color or "#E5E5E5",
+            bg_color=req.bg_color or "transparent",
             shadow_intensity=req.shadow_intensity or "normal",
             delay=req.delay if req.delay is not None else 2.0,
             hide_banners=req.hide_banners if req.hide_banners is not None else True,
@@ -520,7 +523,7 @@ async def run_batch_worker(batch_id: str, req: BatchGenerateRequest, username: s
                 website_type=req.type,
                 mobile_finish=req.mobile_finish or "deep-blue",
                 tablet_finish=req.tablet_finish or "space-black",
-                bg_color=req.bg_color or "#E5E5E5",
+                bg_color=req.bg_color or "transparent",
                 shadow_intensity=req.shadow_intensity or "normal",
                 delay=req.delay if req.delay is not None else 2.5,
                 hide_banners=True,
@@ -827,8 +830,10 @@ async def approve_and_publish_endpoint(req: SyncPublishRequest, request: Request
 
     title = (req.title or target.get("title") or slug).strip()
     url = (req.url or target.get("url") or "").strip()
-    industry = (req.industry or target.get("category") or "Business & Services").strip()
-    website_type = (req.website_type or target.get("type") or "Business").strip()
+    raw_ind = req.industry or target.get("category") or "Business & Services"
+    industry = normalize_industry(raw_ind)
+    raw_type = req.website_type or target.get("type") or "Business"
+    website_type = normalize_website_type(raw_type)
 
     # Locate WebP asset
     webp_path = os.path.join(EXPORTS_DIR, slug, f"{slug}.webp")
@@ -867,7 +872,9 @@ async def approve_and_publish_endpoint(req: SyncPublishRequest, request: Request
                 "sync_status": "synced",
                 "synced_at": datetime.now(timezone.utc).isoformat(),
                 "synced_by": user.get("username", "admin"),
+                "category": industry,
                 "synced_industry": industry,
+                "type": website_type,
                 "synced_type": website_type,
                 "synced_remote_url": res.get("url") or (res.get("item", {}) or {}).get("image_url", ""),
                 "synced_portfolio_page": res.get("portfolio_page_url", "")
@@ -916,12 +923,17 @@ async def confirm_published_endpoint(req: SyncConfirmRequest, request: Request):
     if not target:
         raise HTTPException(status_code=404, detail="Showcase not found.")
 
+    norm_industry = normalize_industry(req.industry or target.get("category") or "Business & Services")
+    norm_type = normalize_website_type(req.website_type or target.get("type") or "Business")
+
     updates = {
         "sync_status": "synced",
         "synced_at": datetime.now(timezone.utc).isoformat(),
         "synced_by": user.get("username", "admin"),
-        "synced_industry": req.industry or target.get("category") or "Business & Services",
-        "synced_type": req.website_type or target.get("type") or "Business",
+        "category": norm_industry,
+        "synced_industry": norm_industry,
+        "type": norm_type,
+        "synced_type": norm_type,
         "synced_remote_url": req.remote_image_url or "",
         "synced_portfolio_page": req.portfolio_page_url or "https://wwwdev.shinjiru.com.my/web-design/web-design-portfolios/"
     }
@@ -995,6 +1007,32 @@ async def download_file(project: str, filename: str, request: Request):
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(file_path, filename=filename)
+
+@app.get("/api/sync/download-plugin")
+async def download_plugin_endpoint(request: Request):
+    """
+    Dynamically packages and delivers the official Shinjiru Portfolio Sync WordPress plugin (.zip).
+    Ready for direct upload to shinjiru.com.my or any WordPress site.
+    """
+    require_auth(request)
+    plugin_src_dir = os.path.join(BASE_DIR, "wordpress-plugin", "shinjiru-portfolio-sync")
+    zip_path = os.path.join(EXPORTS_DIR, "shinjiru-portfolio-sync.zip")
+    
+    if not os.path.exists(plugin_src_dir):
+        raise HTTPException(status_code=404, detail="Plugin source files not found.")
+        
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(plugin_src_dir):
+            for file in files:
+                abs_file = os.path.join(root, file)
+                rel_file = os.path.relpath(abs_file, os.path.dirname(plugin_src_dir))
+                zipf.write(abs_file, rel_file)
+                
+    return FileResponse(
+        zip_path,
+        media_type="application/zip",
+        filename="shinjiru-portfolio-sync.zip"
+    )
 
 if __name__ == "__main__":
     import uvicorn
